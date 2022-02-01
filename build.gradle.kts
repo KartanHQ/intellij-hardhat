@@ -18,6 +18,7 @@ dependencies {
 intellij {
     version.set("2021.1")
     type.set("IU")
+    plugins.set(listOf("JavaScript"))
 }
 tasks {
     patchPluginXml {
