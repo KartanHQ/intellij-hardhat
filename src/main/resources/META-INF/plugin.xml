@@ -1,11 +1,10 @@
 <idea-plugin>
     <id>com.nekofar.milad.intellij-hardhat</id>
-    <name>Plugin display name here</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <name>Hardhat</name>
+    <vendor email="milad@nekofar.com" url="https://github.com/nekofar/intellij-hardhat">Milad Nekofar</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    Hardhat plugin for IntelliJ Platform, provides new project creation by Hardhat templates.
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
