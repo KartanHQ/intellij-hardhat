@@ -18,7 +18,7 @@ class HardhatCliProjectGenerator: NpmPackageProjectGenerator() {
         return HardhatBundle.message("hardhat.project.generator.name")
     }
 
-    override fun getDescription(): String? {
+    override fun getDescription(): String {
         return HardhatBundle.message("hardhat.project.generator.description")
     }
 
