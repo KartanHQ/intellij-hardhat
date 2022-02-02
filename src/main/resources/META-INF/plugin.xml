@@ -4,7 +4,7 @@
     <vendor email="milad@nekofar.com" url="https://github.com/nekofar/intellij-hardhat">Milad Nekofar</vendor>
 
     <description><![CDATA[
-    Hardhat plugin for IntelliJ Platform, provides new project creation by Hardhat templates.
+    Hardhat plugin for IntelliJ Platform, provides new project creation by Hardhat CLI.
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
