@@ -7,6 +7,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.vfs.VirtualFile
 import com.nekofar.milad.intellij.hardhat.HardhatBundle
+import icons.HardhatIcons
+import javax.swing.Icon
 
 class HardhatCliProjectGenerator: NpmPackageProjectGenerator() {
     private val packageName = "hardhat"
@@ -36,5 +38,9 @@ class HardhatCliProjectGenerator: NpmPackageProjectGenerator() {
 
     override fun getNpxCommands(): List<NpxPackageDescriptor.NpxCommand> {
         return listOf(NpxPackageDescriptor.NpxCommand(packageName, executable))
+    }
+
+    override fun getIcon(): Icon {
+        return HardhatIcons.ProjectGenerator
     }
 }
