@@ -1,4 +1,4 @@
-package icons
+package com.nekofar.milad.intellij.hardhat
 
 import com.intellij.openapi.util.IconLoader
 

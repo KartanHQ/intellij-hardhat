@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.vfs.VirtualFile
 import com.nekofar.milad.intellij.hardhat.HardhatBundle
-import icons.HardhatIcons
+import com.nekofar.milad.intellij.hardhat.HardhatIcons
 import javax.swing.Icon
 
 class HardhatCliProjectGenerator: NpmPackageProjectGenerator() {
