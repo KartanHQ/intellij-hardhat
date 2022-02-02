@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.nekofar.milad"
-version = "1.0.0-alpha.0"
+version = "1.0.0-alpha.1"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set("2021.1")
+    version.set("2021.3.2")
     type.set("IU")
     plugins.set(listOf("JavaScript"))
 }

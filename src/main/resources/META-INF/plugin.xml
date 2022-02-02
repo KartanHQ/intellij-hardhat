@@ -13,11 +13,11 @@
     <depends>JavaScript</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
-        <directoryProjectGenerator
-                implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator" />
-        <projectTemplatesFactory
-                implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory" />
+        <!-- works in WebStorm and other SmallIDEs -->
+        <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator" />
+        <projectTemplatesFactory implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory"/>
+        <!-- works in new IDEA wizard -->
+        <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder" />
     </extensions>
 
     <actions>
