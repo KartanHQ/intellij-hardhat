@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.nekofar.milad"
-version = "1.0.0-alpha.1"
+version = "1.0.0-beta.0"
 
 repositories {
     mavenCentral()
