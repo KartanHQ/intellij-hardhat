@@ -1,10 +1,12 @@
+fun properties(key: String) = project.findProperty(key).toString()
+
 plugins {
     id("org.jetbrains.intellij") version "1.3.1"
     kotlin("jvm") version "1.6.10"
 }
 
-group = "com.nekofar.milad"
-version = "1.0.0-beta.0"
+group = properties("pluginGroup")
+version = properties("pluginVersion")
 
 repositories {
     mavenCentral()
@@ -16,9 +18,12 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set("2021.3.2")
-    type.set("IU")
-    plugins.set(listOf("JavaScript"))
+    pluginName.set(properties("pluginName"))
+    version.set(properties("platformVersion"))
+    type.set(properties("platformType"))
+
+    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
 }
 
 tasks {
