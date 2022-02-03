@@ -20,10 +20,10 @@ intellij {
     type.set("IU")
     plugins.set(listOf("JavaScript"))
 }
+
 tasks {
     patchPluginXml {
         changeNotes.set("""
-            Add change notes here.<br>
-            <em>most HTML tags may be used</em>        """.trimIndent())
+            Initial release of the plugin.        """.trimIndent())
     }
 }
