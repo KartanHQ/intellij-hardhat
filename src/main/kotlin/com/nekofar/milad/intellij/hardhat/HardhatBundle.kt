@@ -1,10 +1,8 @@
 package com.nekofar.milad.intellij.hardhat
 
 import com.intellij.DynamicBundle
-import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
-import java.util.function.Supplier
 
 @NonNls
 private const val BUNDLE = "messages.HardhatBundle"
