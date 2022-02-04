@@ -6,8 +6,8 @@
 ![GitHub](https://img.shields.io/github/license/nekofar/intellij-hardhat)
 [![Twitter Follow](https://img.shields.io/twitter/follow/nekofar?style=flat)](https://twitter.com/nekofar)
 
-Provides boilerplate codes for easier smart contract creation using <a href="http://hahttps://rg">Hardhat</a> CLI.
+Provides boilerplate codes for easier smart contract creation using <a href="https://hardhat.org">Hardhat</a> CLI.
 
 ## Installation
 
-To install plugin open `Settings > Plugins > Browse repositories`, and search for Hardhat.
+To install plugin open `Preferences > Plugins > Marketplace`, and search for Hardhat.
