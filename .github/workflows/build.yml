@@ -1,9 +1,9 @@
 
 name: Build
 on:
-  # Trigger the workflow on pushes to only the 'develop' branch
+  # Trigger the workflow on pushes to only the 'master' branch
   push:
-    branches: [ develop ]
+    branches: [ master ]
 
 jobs:
 
