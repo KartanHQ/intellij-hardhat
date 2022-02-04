@@ -10,4 +10,4 @@ Provides boilerplate codes for easier smart contract creation using <a href="htt
 
 ## Installation
 
-To install plugin open `Settings > Plugins > Browse repositories`, and search for Hardhat.
+To install plugin open `Preferences > Plugins > Marketplace`, and search for Hardhat.
