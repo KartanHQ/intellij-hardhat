@@ -27,6 +27,10 @@ intellij {
 }
 
 tasks {
+    wrapper {
+        gradleVersion = properties("gradleVersion")
+    }
+
     patchPluginXml {
         changeNotes.set("""
             Initial release of the plugin.        """.trimIndent())
