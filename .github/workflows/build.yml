@@ -70,8 +70,8 @@ jobs:
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
       # Run Qodana inspections
-      - name: Qodana - Code Inspection
-        uses: JetBrains/qodana-action@v4.2.5
+#      - name: Qodana - Code Inspection
+#        uses: JetBrains/qodana-action@v4.2.5
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
@@ -101,6 +101,10 @@ jobs:
     outputs:
       changelog: ${{ steps.properties.outputs.changelog }}
     steps:
+
+      # Check out current repository
+      - name: Fetch Sources
+        uses: actions/checkout@v2.4.0
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v1.1.5
