@@ -46,3 +46,4 @@ jobs:
             --body "Current pull request contains patched \`CHANGELOG.md\` file." \
             --base develop \
             --head $BRANCH
+            --label documentation
