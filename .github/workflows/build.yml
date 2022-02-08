@@ -110,7 +110,7 @@ jobs:
         uses: orhun/git-cliff-action@v1.1.5
         id: git-cliff
         with:
-          config: .gtihub/changelog/cliff.toml
+          config: .github/changelog/cliff.toml
           args: -vv --latest --strip all
         env:
           OUTPUT: CHANGES.md
