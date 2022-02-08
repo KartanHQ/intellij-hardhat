@@ -124,9 +124,9 @@ jobs:
         run: |
           c=$(cat ${{ steps.git-cliff.outputs.changelog }})
           c="$(printf "$c" | tail -n +3)"
-          c="${r//'%'/'%25'}"     # Multiline escape sequences for %
-          c="${r//$'\n'/'%0A'}"   # Multiline escape sequences for '\n'
-          c="${r//$'\r'/'%0D'}"   # Multiline escape sequences for '\r'
+          c="${c//'%'/'%25'}"     # Multiline escape sequences for %
+          c="${c//$'\n'/'%0A'}"   # Multiline escape sequences for '\n'
+          c="${c//$'\r'/'%0D'}"   # Multiline escape sequences for '\r'
           echo "::set-output name=CHANGELOG::$c"
 
       # Create new release draft - which is not publicly visible and requires manual acceptance
