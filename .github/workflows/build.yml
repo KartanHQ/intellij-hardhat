@@ -102,6 +102,10 @@ jobs:
       changelog: ${{ steps.properties.outputs.changelog }}
     steps:
 
+      # Check out current repository
+      - name: Fetch Sources
+        uses: actions/checkout@v2.4.0
+
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v1.1.5
         id: git-cliff
