@@ -14,6 +14,7 @@
     <depends>JavaScript</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileType name="JavaScript" language="JavaScript" fileNames="hardhat.config.js" />
         <!-- works in WebStorm and other SmallIDEs -->
         <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator" />
         <projectTemplatesFactory implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory"/>
