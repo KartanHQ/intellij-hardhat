@@ -111,7 +111,7 @@ jobs:
         id: git-cliff
         with:
           config: .github/changelog/cliff.toml
-          args: -vv --latest --strip all
+          args: -vv --strip all --tag "v${{ needs.build.outputs.version }}"
         env:
           OUTPUT: CHANGES.md
 
