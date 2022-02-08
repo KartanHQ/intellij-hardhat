@@ -1,0 +1,48 @@
+
+name: Changelog
+on:
+  push:
+    branches: [ develop]
+  workflow_dispatch:
+
+jobs:
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v1.1.6
+        id: git-cliff
+        with:
+          config: .github/changelog/cliff.toml
+          args: --verbose
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Print the changelog
+        run: cat "${{ steps.git-cliff.outputs.changelog }}"
+
+      # Create pull request
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="changelog-update-unreleased"
+
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+
+          git checkout -b $BRANCH
+          git commit -am "docs(changelog): update the changelog file"
+          git push --set-upstream origin $BRANCH
+
+          gh pr create \
+            --title "docs(changelog): update the changelog file" \
+            --body "Current pull request contains patched \`CHANGELOG.md\` file." \
+            --base develop \
+            --head $BRANCH
