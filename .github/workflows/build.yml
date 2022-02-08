@@ -1,9 +1,9 @@
 
 name: Build
 on:
-  # Trigger the workflow on pushes to only the 'master' branch
+  # Trigger the workflow on version tag pushes
   push:
-    branches: [ master ]
+    tags: ["v*.*.*"]
   # Trigger the workflow on any pull request
   pull_request:
 
