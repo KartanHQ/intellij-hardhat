@@ -133,5 +133,5 @@ jobs:
         with:
           draft: true
           name: "v${{ needs.build.outputs.version }}"
-          body: "${{ needs.build.outputs.changelog }}"
-          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+          body: "${{ steps.release.outputs.changelog }}"
+          prerelease: ${{ contains(github.ref, '-erp') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
