@@ -1,9 +1,9 @@
 
 name: Build
 on:
-  # Trigger the workflow on pushes to only the 'master' branch
+  # Trigger the workflow on version tag pushes
   push:
-    branches: [ master ]
+    tags: ["v*.*.*"]
   # Trigger the workflow on any pull request
   pull_request:
 
@@ -105,6 +105,8 @@ jobs:
       # Check out current repository
       - name: Fetch Sources
         uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v1.1.5
