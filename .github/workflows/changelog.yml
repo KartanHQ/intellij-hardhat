@@ -33,21 +33,10 @@ jobs:
 
       # Create pull request
       - name: Create Pull Request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH="changelog-update-unreleased"
-
-          git config user.email "action@github.com"
-          git config user.name "GitHub Action"
-
-          git checkout -b $BRANCH
-          git commit -am "docs(changelog): update the changelog file"
-          git push --set-upstream origin $BRANCH
-
-          gh pr create \
-            --title "docs(changelog): update the changelog file" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file." \
-            --base develop \
-            --head $BRANCH
-            --label documentation
+        uses: peter-evans/create-pull-request@v3.12.1
+        with:
+          base: develop
+          commit-message: "docs(changelog): update the changelog file"
+          title: "docs(changelog): update the changelog file"
+          body: "Current pull request contains patched `CHANGELOG.md` file."
+          labels: documentation
