@@ -14,11 +14,12 @@
     <depends>JavaScript</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileType name="JavaScript" language="JavaScript" fileNames="hardhat.config.js" />
+        <fileType name="Hardhat" language="JavaScript" fileNames="hardhat.config.js"
+                  implementationClass="com.nekofar.milad.intellij.hardhat.HardhatFileType"/>
         <!-- works in WebStorm and other SmallIDEs -->
-        <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator" />
+        <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator"/>
         <projectTemplatesFactory implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory"/>
         <!-- works in new IDEA wizard -->
-        <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder" />
+        <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder"/>
     </extensions>
 </idea-plugin>
