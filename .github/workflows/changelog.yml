@@ -35,8 +35,13 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3.12.1
         with:
+          delete-branch: true
+          branch-suffix: short-commit-hash
           base: develop
-          commit-message: "docs(changelog): update the changelog file"
+          commit-message: |
+            docs(changelog): update the changelog file
+            
+            [skip ci]
           title: "docs(changelog): update the changelog file"
           body: "Current pull request contains patched `CHANGELOG.md` file."
           labels: documentation
