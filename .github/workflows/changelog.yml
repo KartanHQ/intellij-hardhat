@@ -1,8 +1,10 @@
 
 name: Changelog
 on:
+  # Trigger the workflow on pushes to only the 'develop' branch
   push:
     branches: [ develop]
+  # Trigger the workflow on manual dispatch
   workflow_dispatch:
 
 jobs:
