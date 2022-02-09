@@ -3,11 +3,6 @@
     <name>Hardhat</name>
     <vendor url="https://github.com/nekofar" email="milad@nekofar.com">Milad Nekofar</vendor>
 
-    <description><![CDATA[
-    Provides boilerplate codes for easier smart contract creation using <a href="https://hardhat.org">Hardhat</a> CLI. <br>
-    Speed up the setup phase of contract development for both new and experienced developers.
-    ]]></description>
-
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
