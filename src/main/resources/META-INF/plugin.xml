@@ -5,8 +5,9 @@
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
-    <depends>com.intellij.modules.platform</depends>
     <depends>JavaScript</depends>
+    <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="hardhat-solidity.xml">me.serce.solidity</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Hardhat" language="JavaScript" fileNames="hardhat.config.js"
