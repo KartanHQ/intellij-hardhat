@@ -14,33 +14,12 @@ class HardhatCliProjectGenerator: NpmPackageProjectGenerator() {
     private val packageName = "hardhat"
     private val executable = "hardhat"
 
-    override fun getName(): String {
-        return HardhatBundle.message("hardhat.project.generator.name")
-    }
-
-    override fun getDescription(): String {
-        return HardhatBundle.message("hardhat.project.generator.description")
-    }
-
-    override fun filters(project: Project, baseDir: VirtualFile): Array<Filter> {
-        return emptyArray()
-    }
-
-    override fun customizeModule(p0: VirtualFile, p1: ContentEntry?) {}
-
-    override fun packageName(): String {
-        return packageName
-    }
-
-    override fun presentablePackageName(): String {
-        return HardhatBundle.message("hardhat.project.generator.presentable.package.name")
-    }
-
-    override fun getNpxCommands(): List<NpxPackageDescriptor.NpxCommand> {
-        return listOf(NpxPackageDescriptor.NpxCommand(packageName, executable))
-    }
-
-    override fun getIcon(): Icon {
-        return HardhatIcons.ProjectGenerator
-    }
+    override fun getIcon() = HardhatIcons.ProjectGenerator
+    override fun getName() = HardhatBundle.message("hardhat.project.generator.name")
+    override fun getDescription() = HardhatBundle.message("hardhat.project.generator.description")
+    override fun packageName() = packageName
+    override fun presentablePackageName() = HardhatBundle.message("hardhat.project.generator.presentable.package.name")
+    override fun getNpxCommands() = listOf(NpxPackageDescriptor.NpxCommand(packageName, executable))
+    override fun filters(project: Project, baseDir: VirtualFile): Array<Filter> = emptyArray()
+    override fun customizeModule(baseDir: VirtualFile, entry: ContentEntry?) { /* Do nothing */ }
 }
