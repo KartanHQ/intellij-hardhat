@@ -6,7 +6,11 @@
 [![GitHub](https://img.shields.io/github/license/nekofar/intellij-hardhat)](https://github.com/nekofar/intellij-hardhat/blob/master/LICENSE)
 [![Twitter Follow](https://img.shields.io/twitter/follow/nekofar?style=flat)](https://twitter.com/nekofar)
 
+<!-- Plugin description -->
 Provides boilerplate codes for easier smart contract creation using [Hardhat](https://hardhat.org) CLI.
+
+Speed up the setup phase of contract development for both new and experienced developers.
+<!-- Plugin description end -->
 
 ## Installation
 
