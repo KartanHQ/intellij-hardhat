@@ -12,6 +12,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Hardhat" language="JavaScript" fileNames="hardhat.config.js"
                   implementationClass="com.nekofar.milad.intellij.hardhat.HardhatFileType"/>
+        <configurationType
+                implementation="com.nekofar.milad.intellij.hardhat.HardhatRunConfigurationType"/>
         <!-- works in WebStorm and other SmallIDEs -->
         <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator"/>
         <projectTemplatesFactory implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory"/>
