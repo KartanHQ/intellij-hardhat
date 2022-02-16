@@ -35,5 +35,4 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
     override fun getInterpreter(): NodeJsInterpreter? {
         return NodeJsInterpreterRef.create(state?.interpreterRef).resolve(project)
     }
-
 }

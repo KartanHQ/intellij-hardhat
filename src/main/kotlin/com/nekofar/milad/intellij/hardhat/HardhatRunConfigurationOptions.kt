@@ -5,7 +5,7 @@ import com.intellij.execution.configurations.LocatableRunConfigurationOptions
 class HardhatRunConfigurationOptions : LocatableRunConfigurationOptions() {
     private val _configFile = string("").provideDelegate(this, "configFile")
     private val _arguments = string("").provideDelegate(this, "arguments")
-    private var _interpreterRef = string("").provideDelegate(this,"interpreterRef")
+    private var _interpreterRef = string("").provideDelegate(this, "interpreterRef")
 
     var configFile: String
         get() = _configFile.getValue(this).orEmpty()
