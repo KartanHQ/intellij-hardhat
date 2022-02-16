@@ -1,5 +1,7 @@
 package com.nekofar.milad.intellij.hardhat
 
+import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
+import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -9,11 +11,13 @@ import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JSeparator
 
 class HardhatRunConfigurationEditor(project: Project) : SettingsEditor<HardhatRunConfiguration>() {
 
     private val configFileField = TextFieldWithBrowseButton()
     private val argumentsEditor = RawCommandLineEditor()
+    private val interpreterField = NodeJsInterpreterField(project)
 
     private val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
@@ -21,12 +25,17 @@ class HardhatRunConfigurationEditor(project: Project) : SettingsEditor<HardhatRu
             .setHorizontalGap(UIUtil.DEFAULT_HGAP)
             .setVerticalGap(UIUtil.DEFAULT_VGAP)
             .addLabeledComponent(
-                HardhatBundle.message("hardhat.run.configuration.editor.config.file.label"),
+                HardhatBundle.message("hardhat.run.configuration.editor.configFile.label"),
                 configFileField
             )
             .addLabeledComponent(
                 HardhatBundle.message("hardhat.run.configuration.editor.arguments.label"),
                 argumentsEditor
+            )
+            .addComponent(JSeparator())
+            .addLabeledComponent(
+                HardhatBundle.message("hardhat.run.configuration.editor.nodeInterpreter.label"),
+                interpreterField
             )
             .panel
     }
@@ -41,13 +50,15 @@ class HardhatRunConfigurationEditor(project: Project) : SettingsEditor<HardhatRu
     }
 
     override fun resetEditorFrom(runConfiguration: HardhatRunConfiguration) {
-        configFileField.text = runConfiguration.state?.configFile.toString()
-        argumentsEditor.text = runConfiguration.state?.arguments.toString()
+        configFileField.text = runConfiguration.state?.configFile.orEmpty()
+        argumentsEditor.text = runConfiguration.state?.arguments.orEmpty()
+        interpreterField.interpreterRef = NodeJsInterpreterRef.create(runConfiguration.state?.interpreterRef)
     }
 
     override fun applyEditorTo(runConfiguration: HardhatRunConfiguration) {
         runConfiguration.state?.configFile = configFileField.text
         runConfiguration.state?.arguments = argumentsEditor.text
+        runConfiguration.state?.interpreterRef = interpreterField.interpreterRef.referenceName
     }
 
     override fun createEditor(): JComponent {

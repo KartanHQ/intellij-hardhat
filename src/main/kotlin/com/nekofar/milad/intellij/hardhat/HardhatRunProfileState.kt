@@ -29,7 +29,7 @@ class HardhatRunProfileState(
 ) : NodeLocalDebuggableRunProfileStateSync() {
 
     override fun executeSync(configurator: CommandLineDebugConfigurator?): ExecutionResult {
-        val interpreter = NodeJsInterpreterRef.createProjectRef().resolveNotNull(environment.project)
+        val interpreter = NodeJsInterpreterRef.create(options.interpreterRef).resolveNotNull(environment.project)
         val commandLine = NodeCommandLineUtil.createCommandLine(true)
         NodeCommandLineUtil.configureCommandLine(commandLine, configurator, interpreter) {
             configureCommandLine(commandLine, interpreter)
