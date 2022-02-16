@@ -4,11 +4,13 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
+import com.intellij.javascript.nodejs.interpreter.NodeInterpreterUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import java.io.File
 
 class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<HardhatRunConfigurationOptions>(project, factory, name),
@@ -34,5 +36,20 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
 
     override fun getInterpreter(): NodeJsInterpreter? {
         return NodeJsInterpreterRef.create(state?.interpreterRef).resolve(project)
+    }
+
+    @Throws(RuntimeConfigurationException::class)
+    override fun checkConfiguration() {
+        val configFile = state?.configFile?.trim { it <= ' ' }.orEmpty();
+        if (configFile.isEmpty()) {
+            throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.configFile.unspecified"))
+        } else {
+            val file = File(configFile)
+            if (!file.isAbsolute || !file.isFile) {
+                throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.configFile.not.found"))
+            }
+        }
+
+        NodeInterpreterUtil.checkForRunConfiguration(interpreter, project)
     }
 }

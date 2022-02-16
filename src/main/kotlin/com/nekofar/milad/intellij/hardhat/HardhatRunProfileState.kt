@@ -66,6 +66,9 @@ class HardhatRunProfileState(
             commandLine.addParameter(getHardhatBinFile().absolutePath)
         }
 
+        commandLine.addParameter("--config")
+        commandLine.addParameter(options.configFile.orEmpty())
+
         val arguments = options.arguments.orEmpty().trim { it <= ' ' }
         if (arguments.isNotEmpty()) {
             commandLine.addParameters(*ParametersList.parse(arguments))
