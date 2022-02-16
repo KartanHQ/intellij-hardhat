@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Features
+
+- Register and implement new run configuration type for `Hardhat`
+
 ## [1.0.0] - 2022-02-09
 
 ### Bug Fixes
