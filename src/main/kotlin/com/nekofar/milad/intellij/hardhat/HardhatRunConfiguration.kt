@@ -16,6 +16,10 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
     LocatableConfigurationBase<HardhatRunConfigurationOptions>(project, factory, name),
     NodeDebugRunConfiguration {
 
+    override fun getOptions(): HardhatRunConfigurationOptions {
+        return super.getOptions() as HardhatRunConfigurationOptions
+    }
+
     override fun getOptionsClass(): Class<out RunConfigurationOptions> {
         return HardhatRunConfigurationOptions::class.java
     }
@@ -27,7 +31,7 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
         val hardhatPackage = getHardhatPackage()
 
-        return hardhatPackage?.let { HardhatRunProfileState(environment, state!!, hardhatPackage) }
+        return hardhatPackage?.let { HardhatRunProfileState(environment, options, hardhatPackage) }
     }
 
     private fun getHardhatPackage(): NodePackage? {
@@ -35,12 +39,12 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
     }
 
     override fun getInterpreter(): NodeJsInterpreter? {
-        return NodeJsInterpreterRef.create(state?.interpreterRef).resolve(project)
+        return NodeJsInterpreterRef.create(options.interpreterRef).resolve(project)
     }
 
     @Throws(RuntimeConfigurationException::class)
     override fun checkConfiguration() {
-        val configFile = state?.configFile?.trim { it <= ' ' }.orEmpty();
+        val configFile = options.configFile?.trim { it <= ' ' }.orEmpty();
         if (configFile.isEmpty()) {
             throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.configFile.unspecified"))
         } else {
