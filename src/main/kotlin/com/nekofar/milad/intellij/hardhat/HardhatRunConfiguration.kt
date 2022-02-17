@@ -48,7 +48,7 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
             throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.hardhatPackage.not.found"))
         }
 
-        val configFile = options.configFile?.trim { it <= ' ' }.orEmpty();
+        val configFile = options.configFile?.trim { it <= ' ' }.orEmpty()
         if (configFile.isEmpty()) {
             throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.configFile.unspecified"))
         } else {
