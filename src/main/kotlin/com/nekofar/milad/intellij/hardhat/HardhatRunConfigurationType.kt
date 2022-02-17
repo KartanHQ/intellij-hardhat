@@ -8,7 +8,7 @@ import com.intellij.openapi.util.NotNullLazyValue
 
 class HardhatRunConfigurationType :
     SimpleConfigurationType(
-        "HardhatRunConfigurationType",
+        "HardhatRunConfiguration",
         HardhatBundle.message("hardhat.run.configuration.type.name"),
         HardhatBundle.message("hardhat.run.configuration.type.description"),
         NotNullLazyValue.createValue { HardhatIcons.RunConfigurationType }
