@@ -20,7 +20,7 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
         return super.getOptions() as HardhatRunConfigurationOptions
     }
 
-    override fun getOptionsClass(): Class<out RunConfigurationOptions> {
+    override fun getDefaultOptionsClass(): Class<out LocatableRunConfigurationOptions> {
         return HardhatRunConfigurationOptions::class.java
     }
 
