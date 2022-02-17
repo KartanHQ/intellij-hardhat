@@ -1,4 +1,4 @@
-package com.nekofar.milad.intellij.hardhat
+package com.nekofar.milad.intellij.hardhat.rc
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
@@ -10,6 +10,7 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.nekofar.milad.intellij.hardhat.HardhatBundle
 import java.io.File
 
 class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) :

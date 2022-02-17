@@ -1,10 +1,12 @@
-package com.nekofar.milad.intellij.hardhat
+package com.nekofar.milad.intellij.hardhat.rc
 
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
+import com.nekofar.milad.intellij.hardhat.HardhatBundle
+import com.nekofar.milad.intellij.hardhat.HardhatIcons
 
 class HardhatRunConfigurationType :
     SimpleConfigurationType(

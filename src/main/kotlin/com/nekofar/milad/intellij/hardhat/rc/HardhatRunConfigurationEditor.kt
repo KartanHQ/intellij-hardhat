@@ -1,4 +1,4 @@
-package com.nekofar.milad.intellij.hardhat
+package com.nekofar.milad.intellij.hardhat.rc
 
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.UIUtil
+import com.nekofar.milad.intellij.hardhat.HardhatBundle
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JSeparator
