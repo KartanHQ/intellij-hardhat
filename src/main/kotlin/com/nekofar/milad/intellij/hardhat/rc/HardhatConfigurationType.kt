@@ -8,7 +8,7 @@ import com.intellij.openapi.util.NotNullLazyValue
 import com.nekofar.milad.intellij.hardhat.HardhatBundle
 import com.nekofar.milad.intellij.hardhat.HardhatIcons
 
-class HardhatRunConfigurationType :
+class HardhatConfigurationType :
     SimpleConfigurationType(
         "HardhatRunConfiguration",
         HardhatBundle.message("hardhat.run.configuration.type.name"),
