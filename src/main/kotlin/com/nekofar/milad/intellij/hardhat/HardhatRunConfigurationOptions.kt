@@ -1,21 +1,15 @@
 package com.nekofar.milad.intellij.hardhat
 
 import com.intellij.execution.configurations.LocatableRunConfigurationOptions
+import com.intellij.util.xmlb.annotations.OptionTag
 
 class HardhatRunConfigurationOptions : LocatableRunConfigurationOptions() {
-    private val _configFile = string("").provideDelegate(this, "configFile")
-    private val _arguments = string("").provideDelegate(this, "arguments")
-    private var _interpreterRef = string("").provideDelegate(this,"interpreterRef")
+    @get:OptionTag
+    var configFile by string()
 
-    var configFile: String
-        get() = _configFile.getValue(this).orEmpty()
-        set(configFile) = _configFile.setValue(this, configFile)
+    @get:OptionTag
+    var arguments by string()
 
-    var arguments: String
-        get() = _arguments.getValue(this).orEmpty()
-        set(arguments) = _arguments.setValue(this, arguments)
-
-    var interpreterRef: String
-        get() = _interpreterRef.getValue(this).orEmpty()
-        set(interpreterRef) = _interpreterRef.setValue(this, interpreterRef)
+    @get:OptionTag
+    var interpreterRef by string()
 }

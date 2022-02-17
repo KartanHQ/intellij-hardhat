@@ -8,9 +8,8 @@ import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.vfs.VirtualFile
 import com.nekofar.milad.intellij.hardhat.HardhatBundle
 import com.nekofar.milad.intellij.hardhat.HardhatIcons
-import javax.swing.Icon
 
-class HardhatCliProjectGenerator: NpmPackageProjectGenerator() {
+class HardhatCliProjectGenerator : NpmPackageProjectGenerator() {
     private val packageName = "hardhat"
     private val executable = "hardhat"
 

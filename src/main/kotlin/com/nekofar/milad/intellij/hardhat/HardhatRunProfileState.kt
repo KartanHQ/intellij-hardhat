@@ -15,9 +15,9 @@ import com.intellij.javascript.nodejs.NodeStackTraceFilter
 import com.intellij.javascript.nodejs.debug.NodeLocalDebuggableRunProfileStateSync
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
+import com.intellij.javascript.nodejs.library.yarn.YarnPnpNodePackage
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.buildTools.TypeScriptErrorConsoleFilter
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.webcore.util.CommandLineUtil
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -52,11 +52,25 @@ class HardhatRunProfileState(
 
     private fun configureCommandLine(commandLine: GeneralCommandLine, interpreter: NodeJsInterpreter?) {
         commandLine.withCharset(StandardCharsets.UTF_8)
-        CommandLineUtil.setWorkingDirectory(commandLine, File(options.configFile).parentFile, false)
-        commandLine.addParameter(getHardhatBinFile().absolutePath)
 
-        val arguments: String = options.arguments.trim { it <= ' ' }
-        if (StringUtil.isNotEmpty(arguments)) {
+        CommandLineUtil.setWorkingDirectory(commandLine, File(options.configFile.orEmpty()).parentFile, false)
+
+        if (hardhatPackage is YarnPnpNodePackage) {
+            hardhatPackage.addYarnRunToCommandLine(
+                commandLine,
+                environment.project,
+                interpreter,
+                null as String?
+            )
+        } else {
+            commandLine.addParameter(getHardhatBinFile().absolutePath)
+        }
+
+        commandLine.addParameter("--config")
+        commandLine.addParameter(options.configFile.orEmpty())
+
+        val arguments = options.arguments.orEmpty().trim { it <= ' ' }
+        if (arguments.isNotEmpty()) {
             commandLine.addParameters(*ParametersList.parse(arguments))
         }
     }

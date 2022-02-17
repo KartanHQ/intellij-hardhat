@@ -4,15 +4,21 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
+import com.intellij.javascript.nodejs.interpreter.NodeInterpreterUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import java.io.File
 
 class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<HardhatRunConfigurationOptions>(project, factory, name),
     NodeDebugRunConfiguration {
+
+    override fun getOptions(): HardhatRunConfigurationOptions {
+        return super.getOptions() as HardhatRunConfigurationOptions
+    }
 
     override fun getOptionsClass(): Class<out RunConfigurationOptions> {
         return HardhatRunConfigurationOptions::class.java
@@ -25,7 +31,7 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
         val hardhatPackage = getHardhatPackage()
 
-        return hardhatPackage?.let { HardhatRunProfileState(environment, state!!, hardhatPackage) }
+        return hardhatPackage?.let { HardhatRunProfileState(environment, options, hardhatPackage) }
     }
 
     private fun getHardhatPackage(): NodePackage? {
@@ -33,7 +39,25 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
     }
 
     override fun getInterpreter(): NodeJsInterpreter? {
-        return NodeJsInterpreterRef.create(state?.interpreterRef).resolve(project)
+        return NodeJsInterpreterRef.create(options.interpreterRef).resolve(project)
     }
 
+    @Throws(RuntimeConfigurationException::class)
+    override fun checkConfiguration() {
+        if (getHardhatPackage() == null) {
+            throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.hardhatPackage.not.found"))
+        }
+
+        val configFile = options.configFile?.trim { it <= ' ' }.orEmpty();
+        if (configFile.isEmpty()) {
+            throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.configFile.unspecified"))
+        } else {
+            val file = File(configFile)
+            if (!file.isAbsolute || !file.isFile) {
+                throw RuntimeConfigurationError(HardhatBundle.message("hardhat.run.configuration.configFile.not.found"))
+            }
+        }
+
+        NodeInterpreterUtil.checkForRunConfiguration(interpreter, project)
+    }
 }
