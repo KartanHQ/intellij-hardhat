@@ -3,6 +3,7 @@ package com.nekofar.milad.intellij.hardhat.rc
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
 import com.intellij.javascript.nodejs.interpreter.NodeInterpreterUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
@@ -15,7 +16,7 @@ import java.io.File
 
 class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<HardhatRunConfigurationOptions>(project, factory, name),
-    NodeDebugRunConfiguration {
+    NodeDebugRunConfiguration, JSRunProfileWithCompileBeforeLaunchOption {
 
     override fun getOptions(): HardhatRunConfigurationOptions {
         return super.getOptions() as HardhatRunConfigurationOptions
