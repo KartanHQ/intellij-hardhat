@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Register typescript configuration file type
+
 ### Features
 
 - Register and implement new run configuration type for `Hardhat`
