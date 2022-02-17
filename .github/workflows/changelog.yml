@@ -1,9 +1,9 @@
 
 name: Changelog
 on:
-  # Trigger the workflow on pushes to only the 'develop' branch
+  # Trigger the workflow on pushes to only the 'release' branches
   push:
-    branches: [ develop]
+    branches: [ 'release/*' ]
   # Trigger the workflow on manual dispatch
   workflow_dispatch:
 
