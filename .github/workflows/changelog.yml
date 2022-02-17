@@ -39,7 +39,6 @@ jobs:
         with:
           delete-branch: true
           branch-suffix: short-commit-hash
-          base: develop
           commit-message: |
             docs(changelog): update the changelog file
             
