@@ -1,4 +1,4 @@
-package com.nekofar.milad.intellij.hardhat
+package com.nekofar.milad.intellij.hardhat.rc
 
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult

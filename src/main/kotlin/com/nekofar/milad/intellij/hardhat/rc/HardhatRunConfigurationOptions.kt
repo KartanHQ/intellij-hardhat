@@ -1,4 +1,4 @@
-package com.nekofar.milad.intellij.hardhat
+package com.nekofar.milad.intellij.hardhat.rc
 
 import com.intellij.execution.configurations.LocatableRunConfigurationOptions
 import com.intellij.util.xmlb.annotations.OptionTag
