@@ -10,8 +10,8 @@
     <depends optional="true" config-file="hardhat-solidity.xml">me.serce.solidity</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileType name="Hardhat" language="JavaScript" fileNames="hardhat.config.js;hardhat.config.ts"
-                  implementationClass="com.nekofar.milad.intellij.hardhat.HardhatFileType"/>
+        <fileType name="Hardhat" language="JavaScript" fileNames="hardhat.config.js"
+                  implementationClass="com.nekofar.milad.intellij.hardhat.config.HardhatConfigFileType"/>
         <configurationType
                 implementation="com.nekofar.milad.intellij.hardhat.rc.HardhatConfigurationType"/>
         <!-- works in WebStorm and other SmallIDEs -->
