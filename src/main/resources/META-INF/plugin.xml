@@ -1,7 +1,7 @@
-<idea-plugin url="https://github.com/nekofar/intellij-hardhat">
+<idea-plugin>
     <id>com.nekofar.milad.intellij.hardhat</id>
     <name>Hardhat</name>
-    <vendor url="https://github.com/nekofar" email="milad@nekofar.com">Milad Nekofar</vendor>
+    <vendor email="hello@kartan.net" url="https://kartan.net">Kartan</vendor>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
