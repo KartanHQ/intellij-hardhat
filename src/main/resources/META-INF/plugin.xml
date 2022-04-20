@@ -20,5 +20,7 @@
         <projectTemplatesFactory implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory"/>
         <!-- works in new IDEA wizard -->
         <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder"/>
+
+        <errorHandler implementation="com.nekofar.milad.intellij.hardhat.diagnostic.HardhatErrorReportSubmitter"/>
     </extensions>
 </idea-plugin>
