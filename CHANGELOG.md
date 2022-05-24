@@ -1,8 +1,9 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-## [1.2.0-alpha.3] - 2022-05-24
+## [1.2.0-alpha.4] - 2022-05-24
 
 ### Features
 
@@ -24,7 +25,7 @@ All notable changes to this project will be documented in this file.
 
 - Update plugin name and description
 - Add missing icon on project generation
-- Replace generator and template factory by new wizard
+- [**breaking**] Replace generator and template factory by new wizard
 
 ### Features
 
