@@ -3,12 +3,6 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-## [1.2.0] - 2022-06-22
-
-### Features
-
-- Implement error handle and report through github issues
-
 ## [1.1.0] - 2022-04-20
 
 ### Bug Fixes
