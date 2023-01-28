@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [1.2.8] - 2023-01-28
+
+### Bug Fixes
+
+- Solve some minor issues and update dependencies
+
+## [1.2.7] - 2023-01-28
+
+### Bug Fixes
+
+- Solve some minor issues and update dependencies
+
 ## [1.2.6] - 2023-01-01
 
 ### Bug Fixes
