@@ -28,10 +28,10 @@
         <configurationType
                 implementation="com.nekofar.milad.intellij.hardhat.rc.HardhatConfigurationType"/>
         <!-- works in WebStorm and other SmallIDEs -->
-        <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator"/>
+        <directoryProjectGenerator implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectGenerator" />
         <projectTemplatesFactory implementation="com.nekofar.milad.intellij.hardhat.cli.HardhatProjectTemplateFactory"/>
         <!-- works in new IDEA wizard -->
-        <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder"/>
+        <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder" />
 
         <errorHandler implementation="com.nekofar.milad.intellij.hardhat.diagnostic.HardhatErrorReportSubmitter"/>
     </extensions>
