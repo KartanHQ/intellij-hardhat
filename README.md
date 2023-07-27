@@ -16,4 +16,5 @@ Speed up the setup phase of contract development for both new and experienced de
 
 ## Installation
 
-To install plugin open `Preferences > Plugins > Marketplace`, and search for Hardhat.
+For plugin installation, navigate to `Preferences`, then `Plugins`, and finally `Marketplace`. In the search bar, enter `Hardhat`.
+
