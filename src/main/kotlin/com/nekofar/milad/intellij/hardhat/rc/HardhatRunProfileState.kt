@@ -50,7 +50,7 @@ class HardhatRunProfileState(
         return consoleView
     }
 
-    private fun configureCommandLine(commandLine: GeneralCommandLine, interpreter: NodeJsInterpreter?) {
+    private fun configureCommandLine(commandLine: GeneralCommandLine, interpreter: NodeJsInterpreter) {
         commandLine.withCharset(StandardCharsets.UTF_8)
 
         CommandLineUtil.setWorkingDirectory(commandLine, File(options.configFile.orEmpty()).parentFile, false)
