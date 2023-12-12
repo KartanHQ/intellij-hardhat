@@ -41,10 +41,6 @@ class HardhatRunConfiguration(project: Project, factory: ConfigurationFactory, n
         return NodePackage.findDefaultPackage(project, "hardhat", interpreter)
     }
 
-    override fun getInterpreter(): NodeJsInterpreter? {
-        return NodeJsInterpreterRef.create(options.interpreterRef).resolve(project)
-    }
-
     @Throws(RuntimeConfigurationException::class)
     override fun checkConfiguration() {
         if (getHardhatPackage() == null) {
