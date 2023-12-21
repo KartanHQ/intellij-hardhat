@@ -107,10 +107,12 @@ public class SolidityCodeCompleter extends CompletionContributor {
                 for (int i = 0; i  < splitHeader.length;i++){
                     switch (splitHeader[i]){
                         case "is":
+                            //If the reference name has the same name as the contract, we do not want its methods
+                            if (splitHeader[i+1].toLowerCase().equals(nameReference)){
+                                continue;
+                            }
                         case "contract" :
                             if (i+1 < splitHeader.length){
-                                //TODO contract [name] is [otherContract] should be considered
-
                                 //TODO Check access modifier
 
                                 //TODO Even Complete Code if only a part of the method has been written

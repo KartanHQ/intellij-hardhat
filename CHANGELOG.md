@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [1.3.0-alpha.0] - 2023-12-12
+- Added Code Completion for Javascript to complete functions and variables defined in solidity contracts
+
 ## [1.2.26] - 2023-12-12
 
 ### Bug Fixes
