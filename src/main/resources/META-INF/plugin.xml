@@ -34,5 +34,6 @@
         <moduleBuilder builderClass="com.nekofar.milad.intellij.hardhat.cli.HardhatCliProjectModuleBuilder" />
 
         <errorHandler implementation="com.nekofar.milad.intellij.hardhat.diagnostic.HardhatErrorReportSubmitter"/>
+        <completion.contributor implementationClass="de.paesserver.intellij.javascript.SolidityCodeCompleter" language="JavaScript" />
     </extensions>
 </idea-plugin>
