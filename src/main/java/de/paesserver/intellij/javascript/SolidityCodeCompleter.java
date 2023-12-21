@@ -113,6 +113,13 @@ public class SolidityCodeCompleter extends CompletionContributor {
 
                                 //TODO Check access modifier
 
+                                //TODO Even Complete Code if only a part of the method has been written
+                                //E.g. myContract.withd... -> withdraw()
+
+                                //TODO Do complete completion, not just the method name
+                                //E.g   myContract. -> myContract.deposit
+                                //      myContract. -> myContract.deposit()
+
                                 //TODO Follow back reference to get actual contract name so this works:
                                 // const Stio = await ethers.getContractFactory("Stio");
                                 // const deployedContract = await Stio.deploy();
