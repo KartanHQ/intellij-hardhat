@@ -16,6 +16,9 @@ import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 public class SolidityCodeCompleter extends CompletionContributor {
 
     @Override
@@ -34,7 +37,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
         //Is needed to know which methods should be completed
         String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
 
-        String smartContractName = resolveReference(nameReference);
+        String smartContractName = resolveReference(nameReference,elementAtCursor);
         if (smartContractName != null){
             //Not null means that it found a reference to a Smart Contract
 
@@ -57,7 +60,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                 if (element instanceof PsiNamedElement namedElement) {
                                     ASTNode node = namedElement.getNode();
                                     String name = namedElement.getName();
-                                    if (name != null && elementAtCursor != null && elementAtCursor.getParent() != null){
+                                    if (name != null && elementAtCursor.getParent() != null){
 
                                         //TODO Look if it needs more functions
                                         switch (node.getElementType().toString()){
@@ -109,10 +112,32 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * Where it looks when the ContractFactory will be called and which Smart Contract is being called there.
      * The function will give a null if it is not references to a Smart Contract.
      * @param referenceName The name of the reference
+     * @Param elementAtCursor The psiElement where the cursor is currently located
      * @return The name of the SmartContract
      */
-    private static String resolveReference(String referenceName){
-        return "null";
+    private static String resolveReference(String referenceName, PsiElement elementAtCursor){
+        //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
+        //Is needed to know which methods should be completed
+        String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
+
+        //Now look where the nameReference is located. We are looking for something like const name =...
+        //Entity is probably defined in one of the children of the parent
+        //TODO Maybe check if it is outside of parent defined
+        PsiElement parentElement = elementAtCursor.getParent().getParent().getParent();
+        for (PsiElement childElement : parentElement.getChildren()){
+            if (childElement.getNode().getElementType().toString().equals("JS:VAR_STATEMENT")) {
+                //Identifier found. Check if it is that, what we are looking for
+                String line = childElement.getText();
+                long count = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.equals(referenceName)).count();
+                if (count > 0){
+                    //If more than 1 is found, then the declaration of the contract is here
+                    Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.contains("deploy")).flatMap(statement -> Arrays.stream(statement.split("\\.")));
+                }
+                System.out.println(count);
+            }
+        }
+
+        return null;
     }
 
     private static void registerIfReferenced(PsiNamedElement namedElement, String nameReference, String name, @NotNull CompletionResultSet resultSet, String type) {
