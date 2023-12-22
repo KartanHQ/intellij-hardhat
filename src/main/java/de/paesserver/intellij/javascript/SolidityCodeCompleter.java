@@ -30,15 +30,25 @@ public class SolidityCodeCompleter extends CompletionContributor {
         // Use PSIUtil to get the PSI element at the cursor offset
         PsiElement elementAtCursor = currentFile.findElementAt(offset);
 
-        // Retrieve the virtual file corresponding to the Solidity contracts directory
-        VirtualFile solidityDir = project.getBaseDir().findFileByRelativePath("contracts");
-        if (solidityDir != null && solidityDir.isDirectory()) {
-            // Iterate through files in the Solidity directory
-            for (VirtualFile file : solidityDir.getChildren()) {
-                // Ensure it's a Solidity file before processing
-                if ("sol".equalsIgnoreCase(file.getExtension())) {
-                    PsiFile psiFile = psiManager.findFile(file);
+        //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
+        //Is needed to know which methods should be completed
+        String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
+
+        String smartContractName = resolveReference(nameReference);
+        if (smartContractName != null){
+            //Not null means that it found a reference to a Smart Contract
+
+            // Retrieve the virtual file corresponding to the Solidity contracts directory
+            VirtualFile solidityDir = project.getBaseDir().findFileByRelativePath("contracts");
+            if (solidityDir != null && solidityDir.isDirectory()) {
+                //Get the smart contract where the reference is referring to
+                VirtualFile smartContractFile = solidityDir.findChild(nameReference + ".sol");
+                if (smartContractFile != null) {
+                    PsiFile psiFile = psiManager.findFile(smartContractFile);
+                    //Check, if it is actually being recognized as solidity file by the psi tree interpreter or else we cannot resolve the functions
                     if (psiFile != null && psiFile.toString().equals("Solidity File")){
+                        //Going through the tree recursive
+                        //TODO Do not go through the tree recursive to save going through many entries which aren't interesting to us
                         psiFile.accept(new PsiRecursiveElementVisitor() {
                             @Override
                             public void visitElement(@NotNull PsiElement element) {
@@ -61,9 +71,6 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                                 break;
                                             case "FUNCTION_DEFINITION":
                                                 if(elementAtCursor.getParent().getNode().getElementType().toString().equals("JS:REFERENCE_EXPRESSION")){
-                                                    //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
-                                                    //Is needed to know which methods should be completed
-                                                    String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
 
                                                     registerIfReferenced(namedElement, nameReference, name, resultSet, "FUNCTION_DEFINITION");
                                                 }
@@ -78,9 +85,9 @@ public class SolidityCodeCompleter extends CompletionContributor {
 
                                                 break;
                                             default: break;
-                                                //System.out.println(name);
-                                                //System.out.println(node.getElementType());
-                                                //System.out.println("---------");
+                                            //System.out.println(name);
+                                            //System.out.println(node.getElementType());
+                                            //System.out.println("---------");
                                         }
                                     }
                                 }
@@ -93,6 +100,19 @@ public class SolidityCodeCompleter extends CompletionContributor {
 
         // Call super method to ensure other completion contributors are also invoked
         super.fillCompletionVariants(parameters, resultSet);
+    }
+
+    /**
+     * Gets the name of the reference and resolves this. It will look for something like this:
+     *      const Stio = await ethers.getContractFactory("Stio");
+     *      const stio = await Stio.deploy();
+     * Where it looks when the ContractFactory will be called and which Smart Contract is being called there.
+     * The function will give a null if it is not references to a Smart Contract.
+     * @param referenceName The name of the reference
+     * @return The name of the SmartContract
+     */
+    private static String resolveReference(String referenceName){
+        return "null";
     }
 
     private static void registerIfReferenced(PsiNamedElement namedElement, String nameReference, String name, @NotNull CompletionResultSet resultSet, String type) {
@@ -125,6 +145,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                 //TODO Follow back reference to get actual contract name so this works:
                                 // const Stio = await ethers.getContractFactory("Stio");
                                 // const deployedContract = await Stio.deploy();
+                                
                                 //Check if our current reference name equals to the contract name
                                 if (splitHeader[i+1].toLowerCase().equals(nameReference)){
                                     LookupElementBuilder builder = LookupElementBuilder.create(name);
