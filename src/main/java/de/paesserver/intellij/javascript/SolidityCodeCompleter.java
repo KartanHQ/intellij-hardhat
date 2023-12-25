@@ -17,7 +17,6 @@ import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public class SolidityCodeCompleter extends CompletionContributor {
 
@@ -37,12 +36,13 @@ public class SolidityCodeCompleter extends CompletionContributor {
         //Is needed to know which methods should be completed
         String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
 
-        String smartContractName = resolveReference(nameReference,elementAtCursor);
+        String smartContractName = resolveContractVariableReference(nameReference,elementAtCursor);
         if (smartContractName != null){
             //Not null means that it found a reference to a Smart Contract
 
             // Retrieve the virtual file corresponding to the Solidity contracts directory
-            VirtualFile solidityDir = project.getBaseDir().findFileByRelativePath("contracts");
+            VirtualFile solidityDir = project.getBaseDir().findChild("contracts");
+
             if (solidityDir != null && solidityDir.isDirectory()) {
                 //Get the smart contract where the reference is referring to
                 VirtualFile smartContractFile = solidityDir.findChild(nameReference + ".sol");
@@ -115,14 +115,14 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @Param elementAtCursor The psiElement where the cursor is currently located
      * @return The name of the SmartContract
      */
-    private static String resolveReference(String referenceName, PsiElement elementAtCursor){
+    private static String resolveContractVariableReference(String referenceName, PsiElement elementAtCursor){
         //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
         //Is needed to know which methods should be completed
         String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
 
         //Now look where the nameReference is located. We are looking for something like const name =...
         //Entity is probably defined in one of the children of the parent
-        //TODO Maybe check if it is outside of parent defined
+        //TODO: Check if it is outside of parent defined
         PsiElement parentElement = elementAtCursor.getParent().getParent().getParent();
         for (PsiElement childElement : parentElement.getChildren()){
             if (childElement.getNode().getElementType().toString().equals("JS:VAR_STATEMENT")) {
@@ -130,13 +130,84 @@ public class SolidityCodeCompleter extends CompletionContributor {
                 String line = childElement.getText();
                 long count = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.equals(referenceName)).count();
                 if (count > 0){
-                    //If more than 1 is found, then the declaration of the contract is here
-                    Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.contains("deploy")).flatMap(statement -> Arrays.stream(statement.split("\\.")));
+                    //If more than 1 is found, then the deployment of the contract is here
+                    String[] nameArray = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.contains("deploy")).flatMap(statement -> Arrays.stream(statement.split("\\."))).toArray(String[]::new);
+                    //We either find reference.deploy() or something like reference.getContractFactory.deploy()
+                    //If we already have getContractFactory, we have our contract name:
+                    if (Arrays.stream(nameArray).anyMatch(a -> a.contains("getContractFactory"))) {
+                        String method = Arrays.stream(nameArray).filter(a -> a.contains("getContractFactory")).findFirst().get();
+                        return extractContractNameFromGetContractFactory(method,parentElement);
+                    }else {
+                        if (Arrays.stream(nameArray).anyMatch(a -> a.contains("deploy"))) {
+                            //Deploy only found -> resolve the reference for it again
+                            for (int i = 1;i < nameArray.length;i++){
+                                if (nameArray[i].equals("deploy")){
+                                    return resolveReferenceToContractFactory(nameArray[i-1],parentElement);
+                                }
+                            }
+                        }
+                    }
+
                 }
-                System.out.println(count);
             }
         }
+        return null;
+    }
 
+    /**
+     * Resolve reference to the variable which evokes getContractFactory
+     * @param referenceName Name of the reference to look for
+     * @param block Block, in which it looks
+     * @return Returns the name of the contract if found, or else null
+     */
+    private static String resolveReferenceToContractFactory(String referenceName, PsiElement block){
+        //TODO: Check if it is outside of block defined
+        for (PsiElement childElement : block.getChildren()){
+            if (childElement.getNode().getElementType().toString().equals("JS:VAR_STATEMENT")) {
+                String line = childElement.getText();
+                long count = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.equals(referenceName)).count();
+                if (count > 0) {
+                    //If more than 1 is found, then the declaration of the contract is here
+                    //Now our getContractFactory has to be here
+                    String method = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.contains("getContractFactory")).flatMap(statement -> Arrays.stream(statement.split("\\."))).filter(a -> a.contains("getContractFactory")).findFirst().orElse(null);
+                    if (method != null){
+                        return extractContractNameFromGetContractFactory(method,block);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param method The string of the called method from ContractFactory like getContractFactory("Stoi")
+     * @param block Block where to look for the reference name (needed for calling resolveVariableReference9
+     * @return The initialized name or null if not found
+     */
+    private static String extractContractNameFromGetContractFactory(String method, PsiElement block){
+        //TODO: Check if it is outside of block defined
+        //The name is either written in the header or in a variable
+        if (method.split("\"").length > 0) {
+            //Directly initialized
+            return method.split("\"")[1];
+        }else {
+            int firstIndex = method.indexOf("(");
+            int secondIndex = method.indexOf(")");
+            String name = method.substring(firstIndex,secondIndex);
+            return resolveMethodVariableReference(name,block);
+        }
+    }
+
+    /**
+     *  Resolves what the variable name contains if it has been directly initialized
+     * @param referenceName Name of the variable reference
+     * @param block Block where to look for the reference name
+     * @return The initialized name or null if not found
+     */
+    private static String resolveMethodVariableReference(String referenceName, PsiElement block){
+        //TODO: Check if it is outside of block defined
+        // TODO: Implement
         return null;
     }
 
