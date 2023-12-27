@@ -15,10 +15,15 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.diagnostic.Logger;
+
+
 
 import java.util.Arrays;
 
 public class SolidityCodeCompleter extends CompletionContributor {
+
+    private final Logger LOG = Logger.getInstance(this.getClass());
 
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
@@ -29,12 +34,18 @@ public class SolidityCodeCompleter extends CompletionContributor {
         PsiFile currentFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
         int offset = editor.getCaretModel().getOffset();
         if (currentFile == null){
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Couldn't get current file");
+            }
             return;
         }
 
         // Use PSIUtil to get the PSI element at the cursor offset
         PsiElement elementAtCursor = currentFile.findElementAt(offset);
         if (elementAtCursor == null){
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Couldn't find 'cursor");
+            }
             return;
         }
         //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
@@ -43,6 +54,9 @@ public class SolidityCodeCompleter extends CompletionContributor {
 
         String smartContractName = resolveContractVariableReference(nameReference,elementAtCursor);
         if (smartContractName == null){
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Couldn't resolve contract variable reference");
+            }
            return;
         }
 
@@ -50,14 +64,21 @@ public class SolidityCodeCompleter extends CompletionContributor {
 
         // Retrieve the virtual file corresponding to the Solidity contracts directory
         //FIXME Do not use deprecated method
-        VirtualFile solidityDir = project.getBaseDir().findChild("contracts");
+        VirtualFile solidityDir = project.getBaseDir().findFileByRelativePath("contracts");
         if (solidityDir == null || !solidityDir.isDirectory()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Couldn't find 'contracts' directory");
+                LOG.debug("Looked for: " + project.getBaseDir() + "/contracts");
+            }
             return;
         }
 
         //Get the smart contract where the reference is referring to
-        VirtualFile smartContractFile = solidityDir.findChild(nameReference + ".sol");
+        VirtualFile smartContractFile = solidityDir.findChild(smartContractName + ".sol");
         if (smartContractFile == null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Couldn't find smart contract files. Looked for " + smartContractName + ".sol");
+            }
             return;
         }
 
@@ -65,6 +86,9 @@ public class SolidityCodeCompleter extends CompletionContributor {
         //Check, if it is actually being recognized as solidity file by the psi tree interpreter or else we cannot resolve the functions
         //At this point the soldiity plugin is needed so that the correct psi tree is being created
         if (psiFile == null || !psiFile.toString().equals("Solidity File")){
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Couldn't interpret smart contract file. Is the solidity plugin installed?");
+            }
             return;
         }
 
@@ -105,10 +129,11 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                 }
 
                                 break;
-                            default: break;
+                            default:
                             //System.out.println(name);
                             //System.out.println(node.getElementType());
                             //System.out.println("---------");
+                                break;
                         }
                     }
                 }
@@ -129,33 +154,41 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @Param elementAtCursor The psiElement where the cursor is currently located
      * @return The name of the SmartContract
      */
-    private static String resolveContractVariableReference(String referenceName, PsiElement elementAtCursor){
+    private String resolveContractVariableReference(String referenceName, PsiElement elementAtCursor){
+        LOG.debug("Called resolveContractVariableReference with value " + referenceName);
         //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
         //Is needed to know which methods should be completed
-        String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
 
         //Now look where the nameReference is located. We are looking for something like const name =...
         //Entity is probably defined in one of the children of the parent
         //TODO: Check if it is outside of parent defined
         PsiElement parentElement = elementAtCursor.getParent().getParent().getParent();
+        LOG.debug("Number of child objects: " + parentElement.getChildren().length);
         for (PsiElement childElement : parentElement.getChildren()){
             if (childElement.getNode().getElementType().toString().equals("JS:VAR_STATEMENT")) {
                 //Identifier found. Check if it is that, what we are looking for
                 String line = childElement.getText();
+                LOG.debug("Identifier found: " + line);
                 long count = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.equals(referenceName)).count();
+
                 if (count > 0){
+                    LOG.debug("Found reference name! -> Looking for getContractFactory");
                     //If more than 1 is found, then the deployment of the contract is here
                     String[] nameArray = Arrays.stream(line.split(" ")).map(String::trim).filter(statement -> statement.contains("deploy")).flatMap(statement -> Arrays.stream(statement.split("\\."))).toArray(String[]::new);
                     //We either find reference.deploy() or something like reference.getContractFactory.deploy()
                     //If we already have getContractFactory, we have our contract name:
                     if (Arrays.stream(nameArray).anyMatch(a -> a.contains("getContractFactory"))) {
+                        LOG.debug("Found getContractFactory! -> Directly extract name out of it");
                         String method = Arrays.stream(nameArray).filter(a -> a.contains("getContractFactory")).findFirst().get();
                         return extractContractNameFromGetContractFactory(method,parentElement);
                     }else {
+                        LOG.debug("Didn't found getContractFactory! -> Look for deploy");
                         if (Arrays.stream(nameArray).anyMatch(a -> a.contains("deploy"))) {
+                            LOG.debug("Deploy found! -> Look for reference from reference");
                             //Deploy only found -> resolve the reference for it again
                             for (int i = 1;i < nameArray.length;i++){
-                                if (nameArray[i].equals("deploy")){
+                                if (nameArray[i].contains("deploy(")){
+                                    LOG.debug("Found reference name: " + nameArray[i-1] + " -> calling resolveReferenceToContractFactory");
                                     return resolveReferenceToContractFactory(nameArray[i-1],parentElement);
                                 }
                             }
@@ -174,7 +207,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @param block Block, in which it looks
      * @return Returns the name of the contract if found, or else null
      */
-    private static String resolveReferenceToContractFactory(String referenceName, PsiElement block){
+    private String resolveReferenceToContractFactory(String referenceName, PsiElement block){
         //TODO: Check if it is outside of block defined
         for (PsiElement childElement : block.getChildren()){
             if (childElement.getNode().getElementType().toString().equals("JS:VAR_STATEMENT")) {
@@ -199,7 +232,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @param block Block where to look for the reference name (needed for calling resolveVariableReference9
      * @return The initialized name or null if not found
      */
-    private static String extractContractNameFromGetContractFactory(String method, PsiElement block){
+    private String extractContractNameFromGetContractFactory(String method, PsiElement block){
         //TODO: Check if it is outside of block defined
         //The name is either written in the header or in a variable
         if (method.split("\"").length > 0) {
@@ -219,13 +252,13 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @param block Block where to look for the reference name
      * @return The initialized name or null if not found
      */
-    private static String resolveMethodVariableReference(String referenceName, PsiElement block){
+    private String resolveMethodVariableReference(String referenceName, PsiElement block){
         //TODO: Check if it is outside of block defined
         // TODO: Implement
         return null;
     }
 
-    private static void registerIfReferenced(PsiNamedElement namedElement, String nameReference, String name, @NotNull CompletionResultSet resultSet, String type) {
+    private void registerIfReferenced(PsiNamedElement namedElement, String nameReference, String name, @NotNull CompletionResultSet resultSet, String type) {
         if (nameReference != null){
             //Check to which contract it references
             //TODO Check access modifier
