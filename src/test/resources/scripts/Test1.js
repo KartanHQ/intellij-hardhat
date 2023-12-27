@@ -9,3 +9,8 @@ async function deploy() {
 
   return { stio: stio, owner, alice, bob };
 }
+
+async function use(){
+  const { stio, owner, alice, bob } = await deploy();
+
+}

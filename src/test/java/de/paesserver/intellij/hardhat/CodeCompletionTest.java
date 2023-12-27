@@ -2,7 +2,6 @@ package de.paesserver.intellij.hardhat;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixture4TestCase;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +54,7 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
     }
 
     @Test
-    public void test0() {
+    public void noCompletion() {
         myFixture.configureByFile("scripts/Test0.js");
         //Jump to the part where the completion should be evoked
         int caretOffset = 66;
@@ -63,20 +62,22 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
 
         myFixture.type("stio.");
         LookupElement[] items = myFixture.completeBasic();
-        List<String> methods = new ArrayList<>();
-        methods.add("registerAddress");
-        methods.add("deposit");
-        methods.add("withdraw");
+        List<String> suggestions = new ArrayList<>();
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
 
         for (LookupElement element : items){
-            methods.remove(element.getLookupString());
+            suggestions.remove(element.getLookupString());
         }
 
-        Assert.assertEquals("expected no methods to be suggested", 3, methods.size());
+        Assert.assertEquals("expected no methods to be suggested", 5, suggestions.size());
     }
 
     @Test
-    public void test1() {
+    public void separateReference() {
         myFixture.configureByFile("scripts/Test1.js");
         //Jump to the part where the completion should be evoked
         int caretOffset = 214;
@@ -84,20 +85,22 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
 
         myFixture.type("stio.");
         LookupElement[] items = myFixture.completeBasic();
-        List<String> methods = new ArrayList<>();
-        methods.add("registerAddress");
-        methods.add("deposit");
-        methods.add("withdraw");
+        List<String> suggestions = new ArrayList<>();
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
 
         for (LookupElement element : items){
-            methods.remove(element.getLookupString());
+            suggestions.remove(element.getLookupString());
         }
 
-        Assert.assertTrue("expected all methods to be found",methods.isEmpty());
+        Assert.assertTrue("expected all methods to be found",suggestions.isEmpty());
     }
 
     @Test
-    public void test2() {
+    public void singleLineReference() {
         myFixture.configureByFile("scripts/Test2.js");
         //Jump to the part where the completion should be evoked
         int caretOffset = 195;
@@ -105,15 +108,63 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
 
         myFixture.type("stio.");
         LookupElement[] items = myFixture.completeBasic();
-        List<String> methods = new ArrayList<>();
-        methods.add("registerAddress");
-        methods.add("deposit");
-        methods.add("withdraw");
+        List<String> suggestions = new ArrayList<>();
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
 
         for (LookupElement element : items){
-            methods.remove(element.getLookupString());
+            suggestions.remove(element.getLookupString());
         }
 
-        Assert.assertTrue("expected all methods to be found",methods.isEmpty());
+        Assert.assertTrue("expected all suggestions to be found",suggestions.isEmpty());
+    }
+
+    @Test
+    public void connectInBetween() {
+        myFixture.configureByFile("scripts/Test1.js");
+        //Jump to the part where the completion should be evoked
+        int caretOffset = 214;
+        myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
+
+        myFixture.type("stio.connect(alice).");
+        LookupElement[] items = myFixture.completeBasic();
+        List<String> suggestions = new ArrayList<>();
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
+
+        for (LookupElement element : items){
+            suggestions.remove(element.getLookupString());
+        }
+
+        Assert.assertTrue("expected all suggestions to be found",suggestions.isEmpty());
+    }
+
+    @Test
+    public void useAfterDeployFunction() {
+        myFixture.configureByFile("scripts/Test1.js");
+        //Jump to the part where the completion should be evoked
+        int caretOffset = 341;
+        myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
+
+        myFixture.type("stio.");
+        LookupElement[] items = myFixture.completeBasic();
+        List<String> suggestions = new ArrayList<>();
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
+
+        for (LookupElement element : items){
+            suggestions.remove(element.getLookupString());
+        }
+
+        Assert.assertTrue("expected all suggestions to be found",suggestions.isEmpty());
     }
 }
