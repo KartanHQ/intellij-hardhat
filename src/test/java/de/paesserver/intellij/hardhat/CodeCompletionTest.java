@@ -1,18 +1,14 @@
 package de.paesserver.intellij.hardhat;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixture4TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase {
 
@@ -23,7 +19,7 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
     }
 
     @Test
-    public void completionItems() {
+    public void test() {
         myFixture.configureByFile("scripts/Test1.js");
         //Jump to the part where the completion should be evoked
         int caretOffset = 214;
