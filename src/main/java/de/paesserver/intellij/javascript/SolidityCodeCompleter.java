@@ -258,6 +258,15 @@ public class SolidityCodeCompleter extends CompletionContributor {
         return null;
     }
 
+    /**
+     * Registers the named element as a completion result if it is referenced in the given context.
+     *
+     * @param namedElement   The named element to register
+     * @param nameReference  The name of the reference
+     * @param name           The name of the named element
+     * @param resultSet      The completion result set to add the named element to
+     * @param type           The type of the named element
+     */
     private void registerIfReferenced(PsiNamedElement namedElement, String nameReference, String name, @NotNull CompletionResultSet resultSet, String type) {
         if (nameReference != null){
             //Check to which contract it references
