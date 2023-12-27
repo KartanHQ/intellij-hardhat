@@ -293,10 +293,6 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                 //TODO Do complete completion, not just the method name
                                 //E.g   myContract. -> myContract.deposit
                                 //      myContract. -> myContract.deposit()
-
-                                //TODO Follow back reference to get actual contract name so this works:
-                                // const Stio = await ethers.getContractFactory("Stio");
-                                // const deployedContract = await Stio.deploy();
                                 
                                 //Check if our current reference name equals to the contract name
                                 if (splitHeader[i+1].toLowerCase().equals(nameReference)){
