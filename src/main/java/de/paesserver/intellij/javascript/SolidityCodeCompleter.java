@@ -183,7 +183,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
                         return extractContractNameFromGetContractFactory(method,parentElement);
                     }else {
                         LOG.debug("Didn't found getContractFactory! -> Look for deploy");
-                        if (Arrays.stream(nameArray).anyMatch(a -> a.contains("deploy"))) {
+                        if (Arrays.stream(nameArray).anyMatch(a -> a.contains("deploy("))) {
                             LOG.debug("Deploy found! -> Look for reference from reference");
                             //Deploy only found -> resolve the reference for it again
                             for (int i = 1;i < nameArray.length;i++){
