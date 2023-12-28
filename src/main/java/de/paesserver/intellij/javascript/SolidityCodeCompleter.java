@@ -17,10 +17,9 @@ import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.diagnostic.Logger;
 
-
-
 import java.util.Arrays;
 
+//TODO stio.accountMap.accountMap shouldn't be possible
 public class SolidityCodeCompleter extends CompletionContributor {
 
     private final Logger LOG = Logger.getInstance(this.getClass());
@@ -237,7 +236,12 @@ public class SolidityCodeCompleter extends CompletionContributor {
         //The name is either written in the header or in a variable
         if (method.split("\"").length > 0) {
             //Directly initialized
-            return method.split("\"")[1];
+            if (method.split("\"").length > 1){
+                return method.split("\"")[1];
+            }else {
+                return null;
+            }
+
         }else {
             int firstIndex = method.indexOf("(");
             int secondIndex = method.indexOf(")");
