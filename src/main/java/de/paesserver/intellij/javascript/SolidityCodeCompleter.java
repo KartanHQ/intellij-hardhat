@@ -234,13 +234,9 @@ public class SolidityCodeCompleter extends CompletionContributor {
     private String extractContractNameFromGetContractFactory(String method, PsiElement block){
         //TODO: Check if it is outside of block defined
         //The name is either written in the header or in a variable
-        if (method.split("\"").length > 0) {
+        if (method.split("\"").length > 2) {
             //Directly initialized
-            if (method.split("\"").length > 1){
-                return method.split("\"")[1];
-            }else {
-                return null;
-            }
+            return method.split("\"")[1];
 
         }else {
             int firstIndex = method.indexOf("(");
