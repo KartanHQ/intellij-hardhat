@@ -38,3 +38,9 @@ If you want to try out pre-release versions of the plugin, you can manually inst
 5. Click OK and restart IntelliJ IDEA when you're asked to.
 
 Keep in mind that pre-release versions might have features that aren't fully finalized and bugs that will be fixed in the final release. Use them at your own risk.
+
+## Additional Resources
+
+For more information on the changes in each version of the plugin, see the [Changelog](./CHANGELOG.md).
+
+For guidelines on contributing to the project, refer to the [Contributing Guide](./CONTRIBUTING.md).
