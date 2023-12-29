@@ -6,7 +6,6 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.javascript.psi.*;
-import com.intellij.lang.javascript.psi.impl.JSVariableImpl;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -20,13 +19,18 @@ import com.intellij.openapi.diagnostic.Logger;
 
 import java.util.Arrays;
 
-//TODO stio.accountMap.accountMap shouldn't be possible
 public class SolidityCodeCompleter extends CompletionContributor {
 
     private final Logger LOG = Logger.getInstance(this.getClass());
 
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
+        doCodeSuggestion(parameters, resultSet);
+        // Call super method to ensure other completion contributors are also invoked
+        super.fillCompletionVariants(parameters, resultSet);
+    }
+
+    private void doCodeSuggestion(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
         // Get the project and file manager
         Project project = parameters.getPosition().getProject();
         PsiManager psiManager = PsiManager.getInstance(project);
@@ -50,15 +54,15 @@ public class SolidityCodeCompleter extends CompletionContributor {
         }
         //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
         //Is needed to know which methods should be completed
-        PsiElement cursorParent = elementAtCursor.getParent();
-        String nameReference = cursorParent.getText().split("\\.")[0];
+        //It should return if the cursor is behind anyMethod. and therefore not referring to a contract
+        String nameReference = getNameReference(elementAtCursor);
 
         String smartContractName = resolveContractVariableReference(nameReference,elementAtCursor);
         if (smartContractName == null){
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Couldn't resolve contract variable reference");
             }
-           return;
+            return;
         }
 
         //Not null means that it found a reference to a Smart Contract
@@ -125,9 +129,23 @@ public class SolidityCodeCompleter extends CompletionContributor {
             }
 
         }
+        return;
+    }
 
-        // Call super method to ensure other completion contributors are also invoked
-        super.fillCompletionVariants(parameters, resultSet);
+    /**
+     * Retrieves the name reference of the given element at the cursor.
+     *
+     * @param elementAtCursor The PsiElement at the cursor position.
+     * @return The name reference of the element.
+     */
+    private static String getNameReference(PsiElement elementAtCursor) {
+        PsiElement cursorParent = elementAtCursor.getParent();
+        String[] references = cursorParent.getText().split("\\.");
+        String nameReference = references[references.length-2];
+        if (nameReference.contains("connect(")){
+            nameReference = references[references.length-3];
+        }
+        return nameReference;
     }
 
 
