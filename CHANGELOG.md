@@ -4,7 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.3.0-alpha.1 - 2023-12-27
+## [1.3.0-alpha.2] - 2023-12-29
+- Added Code Completion Test badge to README.
+- Added additional resources to README.md.
+- Removed donation badge from README.md.
+- Updated README.md with code completion test status and pre-release installation guidelines.
+- Updated JDK version in GitHub workflow.
+- Added GitHub Actions workflow for Gradle build and tests.
+- The SolidityCodeCompleter has been refactored to enhance efficiency.
+- Refactored SolidityCodeCompleter for improved efficiency.
+- Updated gradle.properties to include 'java' in platformPlugins.
+- Refactored SolidityCodeCompleter method extraction.
+- Added new JavaScript test scripts.
+- Improved caret positioning and added more detailed error messages in tests.
+- Updated code completion tests and added new methods for suggestions.
+- Removed outdated TODO comments in SolidityCodeCompleter.
+- Added method documentation.
+- Updated CHANGELOG.md for version 1.3.0-alpha.1.
+- Enhanced CodeCompletionTest with additional tests and setup.
+- Updated solidity plugin version in gradle.properties.
+- Fixed missing dependency for testing for IDE 2023.2.
+- Updated dependencies.
+
+## [1.3.0-alpha.1] - 2023-12-27
 - Added first tests
 - Implemented reference resolution
 
