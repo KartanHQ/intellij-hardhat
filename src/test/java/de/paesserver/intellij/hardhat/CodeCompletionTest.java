@@ -168,6 +168,14 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
 
     @Test
     public void useAfterDeployFunction() {
+        List<String> suggestions = new ArrayList<>();
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
+        int initialSize = suggestions.size();
+
         myFixture.configureByFile("scripts/Test1.js");
         //Jump to the part where the completion should be evoked
         int caretOffset = myFixture.getEditor().getDocument().getText().indexOf("//Code2");
@@ -175,19 +183,27 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
 
         myFixture.type("stio.");
         LookupElement[] items = myFixture.completeBasic();
-        List<String> suggestions = new ArrayList<>();
+        for (LookupElement element : items){
+            suggestions.remove(element.getLookupString());
+        }
+        Assert.assertTrue("methods not found: [" + suggestions.size() + "/" + initialSize + "]: " + suggestions, suggestions.isEmpty());
+
         suggestions.add("registerAddress");
         suggestions.add("deposit");
         suggestions.add("withdraw");
         suggestions.add("accountMap");
         suggestions.add("owner");
+        initialSize = suggestions.size();
 
-        int initialSize = suggestions.size();
+        //Jump to the part where the completion should be evoked
+        caretOffset = myFixture.getEditor().getDocument().getText().indexOf("//Code3");
+        myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
 
+        myFixture.type("stio.");
+        items = myFixture.completeBasic();
         for (LookupElement element : items){
             suggestions.remove(element.getLookupString());
         }
-
         Assert.assertTrue("methods not found: [" + suggestions.size() + "/" + initialSize + "]: " + suggestions, suggestions.isEmpty());
     }
 
