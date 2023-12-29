@@ -5,6 +5,10 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.lang.javascript.psi.JSExpression;
+import com.intellij.lang.javascript.psi.JSReferenceExpression;
+import com.intellij.lang.javascript.psi.JSVarStatement;
+import com.intellij.lang.javascript.psi.JSVariable;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -13,10 +17,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.diagnostic.Logger;
 
+import java.sql.Array;
 import java.util.Arrays;
 
 //TODO stio.accountMap.accountMap shouldn't be possible
@@ -49,7 +55,8 @@ public class SolidityCodeCompleter extends CompletionContributor {
         }
         //Name reference is the reference name of the object. Like myObject.anyMethod(). myObject is the reference name
         //Is needed to know which methods should be completed
-        String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
+        PsiElement cursorParent = elementAtCursor.getParent();
+        String nameReference = cursorParent.getText().split("\\.")[0];
 
         String smartContractName = resolveContractVariableReference(nameReference,elementAtCursor);
         if (smartContractName == null){
@@ -91,56 +98,58 @@ public class SolidityCodeCompleter extends CompletionContributor {
             return;
         }
 
-        //Going through the tree recursive
-        //TODO Do not go through the tree recursive to save going through many entries which aren't interesting to us
-        psiFile.accept(new PsiRecursiveElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                super.visitElement(element);
-                // Check if the element is a method
-                if (element instanceof PsiNamedElement namedElement) {
-                    ASTNode node = namedElement.getNode();
-                    String name = namedElement.getName();
-                    if (name != null && elementAtCursor.getParent() != null){
+        PsiElement contractDefinition = getContractDefinition(psiFile);
+        if (contractDefinition == null){
+            return;
+        }
+        PsiElement[] functionsAndVariables = Arrays.stream(contractDefinition.getChildren()).filter(element -> {
+            String type = element.getNode().getElementType().toString();
+            return type.contains("FUNCTION_DEFINITION") || type.contains("STATE_VARIABLE_DECLARATION");
+        }).toArray(PsiElement[]::new);
 
-                        //TODO Look if it needs more functions
-                        switch (node.getElementType().toString()){
-                            case "CONTRACT_DEFINITION":
-                                if(elementAtCursor.getParent().getNode().getElementType().toString().equals("BLOCK_STATEMENT"))
-                                    resultSet.addElement(
-                                            LookupElementBuilder.create(name)
-                                                    .withIcon(PlatformIcons.CLASS_ICON)
-                                                    .withTypeText(psiFile.getName(),true)
-                                    );
-                                break;
-                            case "FUNCTION_DEFINITION":
-                                if(elementAtCursor.getParent().getNode().getElementType().toString().equals("JS:REFERENCE_EXPRESSION")){
-
-                                    registerIfReferenced(namedElement, nameReference, name, resultSet, "FUNCTION_DEFINITION");
-                                }
-
-                                break;
-                            case "STATE_VARIABLE_DECLARATION":
-                                if(elementAtCursor.getParent().getNode().getElementType().toString().equals("JS:REFERENCE_EXPRESSION")){
-                                    String nameReference = elementAtCursor.getParent().getText().split("\\.")[0];
-
-                                    registerIfReferenced(namedElement, nameReference, name, resultSet, "STATE_VARIABLE_DECLARATION");
-                                }
-
-                                break;
-                            default:
-                            //System.out.println(name);
-                            //System.out.println(node.getElementType());
-                            //System.out.println("---------");
-                                break;
-                        }
-                    }
+        for (PsiElement functionOrVariable : functionsAndVariables) {
+            if (functionOrVariable instanceof PsiNamedElement namedElement) {
+                ASTNode node = namedElement.getNode();
+                String name = namedElement.getName();
+                if (name == null){
+                    continue;
+                }
+                if (node.getElementType().toString().equals("FUNCTION_DEFINITION")) {
+                    resultSet.addElement(
+                            LookupElementBuilder.create(name)
+                                    .withIcon(PlatformIcons.METHOD_ICON)
+                                    .withTypeText(psiFile.getName(), true)
+                    );
+                } else if (node.getElementType().toString().equals("STATE_VARIABLE_DECLARATION")) {
+                    resultSet.addElement(
+                            LookupElementBuilder.create(name)
+                                    .withIcon(PlatformIcons.VARIABLE_ICON)
+                                    .withTypeText(psiFile.getName(), true)
+                    );
                 }
             }
-        });
+
+        }
 
         // Call super method to ensure other completion contributors are also invoked
         super.fillCompletionVariants(parameters, resultSet);
+    }
+
+
+    /**
+     * Retrieves the contract definition PSI element from the given file.
+     *
+     * @param file The PSI file to search for the contract definition.
+     * @return The contract definition PSI element if found, or null otherwise.
+     */
+    private PsiElement getContractDefinition(PsiFile file){
+        for (PsiElement element : file.getChildren()){
+            String nodeType = element.getNode().getElementType().toString();
+            if (nodeType.equals("CONTRACT_DEFINITION")) {
+                return element;
+            }
+        }
+        return null;
     }
 
     /**
@@ -241,10 +250,12 @@ public class SolidityCodeCompleter extends CompletionContributor {
         }else {
             int firstIndex = method.indexOf("(");
             int secondIndex = method.indexOf(")");
-            String name = method.substring(firstIndex,secondIndex);
+            String name = method.substring(firstIndex+1,secondIndex);
             return resolveMethodVariableReference(name,block);
         }
     }
+
+
 
     /**
      *  Resolves what the variable name contains if it has been directly initialized
@@ -253,77 +264,17 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @return The initialized name or null if not found
      */
     private String resolveMethodVariableReference(String referenceName, PsiElement block){
-        //TODO: Check if it is outside of block defined
-        // TODO: Implement
-        return null;
-    }
-
-    /**
-     * Registers the named element as a completion result if it is referenced in the given context.
-     *
-     * @param namedElement   The named element to register
-     * @param nameReference  The name of the reference
-     * @param name           The name of the named element
-     * @param resultSet      The completion result set to add the named element to
-     * @param type           The type of the named element
-     */
-    private void registerIfReferenced(PsiNamedElement namedElement, String nameReference, String name, @NotNull CompletionResultSet resultSet, String type) {
-        if (nameReference != null){
-            //Check to which contract it references
-            //TODO Check access modifier
-            if (namedElement.getParent().getNode().getElementType().toString().equals("CONTRACT_DEFINITION")){
-                String text = namedElement.getParent().getText();
-                int index = text.indexOf("{");
-                String header = (index != -1) ? text.substring(0, index).trim() : text.trim();
-                String[] splitHeader = header.split(" ");
-                for (int i = 0; i  < splitHeader.length;i++){
-                    switch (splitHeader[i]){
-                        case "is":
-                            //If the reference name has the same name as the contract, we do not want its methods
-                            if (splitHeader[i+1].toLowerCase().equals(nameReference)){
-                                continue;
-                            }
-                        case "contract" :
-                            if (i+1 < splitHeader.length){
-                                //TODO Check access modifier
-
-                                //TODO Even Complete Code if only a part of the method has been written
-                                //E.g. myContract.withd... -> withdraw()
-
-                                //TODO Do complete completion, not just the method name
-                                //E.g   myContract. -> myContract.deposit
-                                //      myContract. -> myContract.deposit()
-                                
-                                //Check if our current reference name equals to the contract name
-                                if (splitHeader[i+1].toLowerCase().equals(nameReference)){
-                                    LookupElementBuilder builder = LookupElementBuilder.create(name);
-                                    switch (type){
-                                        case "STATE_VARIABLE_DECLARATION":
-                                            builder = builder.withIcon(PlatformIcons.VARIABLE_ICON);
-                                            builder = builder.withTypeText(namedElement.getFirstChild().getText(),true);
-                                            break;
-                                        case "FUNCTION_DEFINITION":
-                                            builder = builder.withIcon(PlatformIcons.METHOD_ICON);
-                                            for(PsiElement child : namedElement.getChildren()){
-                                                switch (child.getNode().getElementType().toString()) {
-                                                    case "PARAMETER_LIST":
-                                                        builder = builder.appendTailText(child.getText(),true);
-                                                        break;
-                                                    case "FUNCTION_VISIBILITY_SPECIFIER":
-                                                        builder = builder.withTypeText(child.getText(),true);
-                                                        break;
-                                                }
-                                            }
-                                            break;
-                                    }
-
-                                    resultSet.addElement(builder);
-                                }
-                            }
-                            break;
+        for (PsiElement childElement : block.getChildren()){
+            if (childElement instanceof JSVarStatement varStatement) {
+                JSVariable[] variables = varStatement.getVariables();
+                for (JSVariable variable: variables) {
+                    if(variable.getName().equals(referenceName)) {
+                        JSExpression initializer = variable.getInitializerOrStub();
+                        return initializer.getText();
                     }
                 }
             }
         }
+        return null;
     }
 }
