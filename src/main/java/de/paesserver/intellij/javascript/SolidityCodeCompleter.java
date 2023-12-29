@@ -205,12 +205,16 @@ public class SolidityCodeCompleter extends CompletionContributor {
                             // await Stio.deploy()
                             if (initializer instanceof JSPrefixExpression prefixExpression) {
                                 JSExpression methodExpression = prefixExpression.getExpression();
+
                                 if (methodExpression instanceof JSCallExpression callExpression) {
                                     JSExpression expression = callExpression.getMethodExpression();
+
                                     if (expression instanceof JSReferenceExpression referenceExpression) {
                                         PsiElement firstChild = referenceExpression.getFirstChild();
+
                                         if (firstChild instanceof JSReferenceExpression) {
                                             resolvedElement = ((JSReferenceExpression) firstChild).resolve();
+
                                             if (resolvedElement instanceof JSVariable jsVariable){
                                                 resolvedElement = jsVariable.getInitializer();
                                             }
@@ -227,20 +231,17 @@ public class SolidityCodeCompleter extends CompletionContributor {
                         if (resolvedElement instanceof JSPrefixExpression prefixExpression) {
                             JSExpression awaitedExpression = prefixExpression.getExpression();
 
-                            if (awaitedExpression instanceof JSCallExpression) {
-                                JSCallExpression callExpression = (JSCallExpression) awaitedExpression;
+                            if (awaitedExpression instanceof JSCallExpression callExpression) {
                                 JSArgumentList argumentList = callExpression.getArgumentList();
 
                                 if (argumentList != null && argumentList.getArguments().length > 0) {
                                     JSExpression firstArgument = argumentList.getArguments()[0];
 
                                     // Handle argument if it's a reference
-                                    if (firstArgument instanceof JSReferenceExpression) {
-                                        JSReferenceExpression argumentReference = (JSReferenceExpression) firstArgument;
+                                    if (firstArgument instanceof JSReferenceExpression argumentReference) {
                                         PsiElement resolvedReference = argumentReference.resolve();
 
-                                        if (resolvedReference instanceof JSVariable) {
-                                            JSVariable resolvedVariable = (JSVariable) resolvedReference;
+                                        if (resolvedReference instanceof JSVariable resolvedVariable) {
                                             JSExpression variableInitializer = resolvedVariable.getInitializer();
 
                                             if (variableInitializer != null) {
