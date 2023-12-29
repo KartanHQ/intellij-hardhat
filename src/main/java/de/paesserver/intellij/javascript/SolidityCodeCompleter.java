@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.lang.ecmascript6.psi.ES6Property;
 import com.intellij.lang.javascript.psi.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -140,11 +141,16 @@ public class SolidityCodeCompleter extends CompletionContributor {
      */
     private static String getNameReference(PsiElement elementAtCursor) {
         PsiElement cursorParent = elementAtCursor.getParent();
-        String[] references = cursorParent.getText().split("\\.");
+        String text = cursorParent.getText();
+        text = text.replace("\\”","").replace("\n","");
+        String[] references = text.split("\\.");
         String nameReference = references[references.length-2];
+        String[] commands = nameReference.split(";");
+        nameReference = commands[commands.length-1];
         if (nameReference.contains("connect(")){
             nameReference = references[references.length-3];
         }
+        nameReference = nameReference.trim();
         return nameReference;
     }
 
@@ -164,6 +170,8 @@ public class SolidityCodeCompleter extends CompletionContributor {
         }
         return null;
     }
+
+    //TODO What if the variable has been initialized in the class?
 
     /**
      * Gets the name of the reference and resolves this. It will look for something like this:
@@ -187,7 +195,52 @@ public class SolidityCodeCompleter extends CompletionContributor {
                 for (JSVariable jsvarVariables: variables) {
                     if(referenceName.equals(jsvarVariables.getName())) {
                         JSExpression initializer = jsvarVariables.getInitializerOrStub();
+                        if (initializer == null){
+                            //Initializer is null, so it has to be initialized out of current scope. We need do use jsvarVariables.getStatement() to look for the initialization
 
+                            //Get position of variable declaration
+                            String constant = jsvarVariables.getStatement().getText().trim().replace("\n","").split("=")[0];
+                            //Get everything between {} and split it by , in constant
+                            String[] constants = constant.substring(constant.indexOf("{") + 1, constant.indexOf("}")).replace(" ", "").split(",");
+                            //Now look for the position of the element that is equal to referenceName and save the position number
+                            int position = Arrays.asList(constants).indexOf(referenceName);
+
+
+                            //Get function name
+                            String[] statements = jsvarVariables.getStatement().getText().trim().replace("\n","").split("\\.");
+                            statements = statements[statements.length-1].replace(";","").split(" ");
+                            String functionName = statements[statements.length-1];
+                            functionName = functionName.replaceAll("\\(.*\\)", "");
+                            //Search for function with the name of functionName
+                            PsiElement[] jsFunctions = jsvarVariables.getDeclarationScope().getParent().getParent().getChildren();
+                            for (PsiElement potentialFunciton : jsFunctions) {
+                                if ("JS:FUNCTION_DECLARATION".equals(potentialFunciton.getNode().getElementType().toString())){
+                                    if(potentialFunciton instanceof JSFunction function){
+                                        if (functionName.equals(function.getName())){
+                                            //We are in the correct function, now we have to find how the variable was called here and find it
+                                            //We have to look in the return statement first
+                                            //We saved the position earlier
+                                            for (PsiElement statement : function.getLastChild().getChildren()){
+                                                //Look for return and get the name at saved position
+                                                if (statement.getNode().getElementType().toString().equals("JS:RETURN_STATEMENT")) {
+                                                    if(statement instanceof JSReturnStatement returnStatement){
+                                                        PsiElement element = returnStatement.getExpression().getChildren()[position];
+                                                        //Ladies and gentlemen... we got him
+                                                        //Can be either ES6PropertyImpl class or JSPropertyImpl
+                                                        if (element instanceof ES6Property property){
+                                                            return resolveContractVariableReference(property.getName(),property);
+                                                        }else if (element instanceof JSProperty property){
+                                                            return resolveContractVariableReference(property.getName(),property);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
                         //Now we are at the point where the contract is being initialied.
                         //Possible:
                         // await (await ethers.getContractFactory("Stio")).deploy()
