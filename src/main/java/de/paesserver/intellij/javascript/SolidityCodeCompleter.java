@@ -227,10 +227,8 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                                         PsiElement element = returnStatement.getExpression().getChildren()[position];
                                                         //Ladies and gentlemen... we got him
                                                         //Can be either ES6PropertyImpl class or JSPropertyImpl
-                                                        if (element instanceof ES6Property property){
-                                                            return resolveContractVariableReference(property.getName(),property);
-                                                        }else if (element instanceof JSProperty property){
-                                                            return resolveContractVariableReference(property.getName(),property);
+                                                        if (element instanceof PsiNamedElement namedElement){
+                                                            return resolveContractVariableReference(namedElement.getName(),namedElement);
                                                         }
                                                     }
                                                 }
