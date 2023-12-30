@@ -21,6 +21,6 @@ async function getDeployedContract() {
 }
 
 async function use(){
-  const stio = await myCustomDeploy();
+  const stio = await getDeployedContract();
   //Code3
 }

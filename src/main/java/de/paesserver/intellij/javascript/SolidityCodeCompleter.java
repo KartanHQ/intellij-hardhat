@@ -5,7 +5,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
-import com.intellij.lang.ecmascript6.psi.ES6Property;
 import com.intellij.lang.javascript.psi.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -184,6 +183,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @return The name of the SmartContract
      */
     private String resolveContractVariableReference(String referenceName, PsiElement elementAtCursor){
+        resolveInitializer(referenceName,elementAtCursor);
         LOG.debug("Called resolveContractVariableReference with value " + referenceName);
         PsiElement parent = elementAtCursor.getParent();
         while (parent != null && !(parent instanceof JSBlockStatement)) {
@@ -195,15 +195,21 @@ public class SolidityCodeCompleter extends CompletionContributor {
                 for (JSVariable jsvarVariables: variables) {
                     if(referenceName.equals(jsvarVariables.getName())) {
                         JSExpression initializer = jsvarVariables.getInitializerOrStub();
+                        // PROBLEM:
+                        // const { stio, contractOwner, alice, bob } = await myCustomDeploy(); gets initializer=null but not const stio = await getDeployedContract();
                         if (initializer == null){
                             //Initializer is null, so it has to be initialized out of current scope. We need do use jsvarVariables.getStatement() to look for the initialization
 
                             //Get position of variable declaration
                             String constant = jsvarVariables.getStatement().getText().trim().replace("\n","").split("=")[0];
-                            //Get everything between {} and split it by , in constant
-                            String[] constants = constant.substring(constant.indexOf("{") + 1, constant.indexOf("}")).replace(" ", "").split(",");
-                            //Now look for the position of the element that is equal to referenceName and save the position number
-                            int position = Arrays.asList(constants).indexOf(referenceName);
+                            int position = 0;
+                            if (constant.contains("{")){
+                                //We have then something like this const { stio, contractOwner, alice, bob } = await myCustomDeploy();
+                                //Get everything between {} and split it by , in constant
+                                String[] constants = constant.substring(constant.indexOf("{") + 1, constant.indexOf("}")).replace(" ", "").split(",");
+                                //Now look for the position of the element that is equal to referenceName and save the position number
+                                position = Arrays.asList(constants).indexOf(referenceName);
+                            }
 
 
                             //Get function name
@@ -306,6 +312,85 @@ public class SolidityCodeCompleter extends CompletionContributor {
                             }
                         }
                     }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This function gets the name of a reference and the current psi element where the reference has been found. It traces back the references until it finds a function which is called getContractFactory and throws the PSIElement of that.
+     *
+     * @param referenceName      The name of the reference.
+     * @param currentPsiElement  The current PSI element where the reference is found.
+     * @return The PSIElement of the initializer function with the name "getContractFactory",
+     *                           or null if the initializer function is not found.
+     */
+    private PsiElement resolveInitializer(String referenceName,PsiElement currentPsiElement){
+        //Move to the next block
+        PsiElement parent = currentPsiElement.getParent();
+        while (parent != null && !(parent instanceof JSBlockStatement)) {
+            parent = parent.getParent();
+        }
+        //Search for element there
+        for (PsiElement childElement : parent.getChildren()){
+            //We are looking for variables which have been initialized
+            if (childElement instanceof JSVarStatement varStatement) {
+                JSVariable[] variables = varStatement.getVariables();
+                //We iterate through each variable to find the one we are looking for
+                for (JSVariable jsvarVariables: variables) {
+                    if(referenceName.equals(jsvarVariables.getName())) {
+                        //At this point we have found the variable we are looking for
+                        //We now look how this one got initialized
+                        JSExpression initializer = jsvarVariables.getInitializer();
+                        int position = 0;
+                        if (initializer == null){
+                            //If it was null we get something like this:
+                            //const { stio, contractOwner, alice, bob } = await myCustomDeploy();
+                            //we have to resolve this first
+
+                            //We look first on which position our name we look for is
+                            String constant = jsvarVariables.getStatement().getText().trim().replace("\n","").split("=")[0];
+                            String[] constants = constant.substring(constant.indexOf("{") + 1, constant.indexOf("}")).replace(" ", "").split(",");
+                            //Now look for the position of the element that is equal to referenceName and save the position number
+                            position = Arrays.asList(constants).indexOf(referenceName);
+                        }
+                        //If it was not null we get something like this:
+                        //await Stio.deploy()
+                        //await getDeployedContract()
+                        //Get function name
+                        String[] statements = jsvarVariables.getStatement().getText().trim().replace("\n","").split("\\.");
+                        statements = statements[statements.length-1].replace(";","").split(" ");
+                        String functionName = statements[statements.length-1];
+                        functionName = functionName.replaceAll("\\(.*\\)", "");
+                        //We either need to resolve the function first or we can directly look if it points to the factory
+                        System.out.println(functionName);
+                        JSFunction function = searchFunctionInFile(functionName,currentPsiElement);
+
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Searches for a function with the given name in the parent file scope.
+     *
+     * @param functionName      The name of the function to search for.
+     * @param currentPsiElement The current PSI element.
+     * @return The PSIElement of the function with the given name, or null if not found.
+     */
+    private JSFunction searchFunctionInFile(String functionName, PsiElement currentPsiElement){
+        PsiElement fileScope = currentPsiElement.getParent();
+        while (fileScope != null && !"FILE".equals(fileScope.getNode().getElementType().toString())) {
+            fileScope = fileScope.getParent();
+        }
+        PsiElement[] jsFunctions = fileScope.getChildren();
+        for (PsiElement potentialFunciton : jsFunctions) {
+            if(potentialFunciton instanceof JSFunction function){
+                if (functionName.equals(function.getName())){
+                    return function;
                 }
             }
         }
