@@ -17,6 +17,7 @@ import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.diagnostic.Logger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SolidityCodeCompleter extends CompletionContributor {
@@ -364,9 +365,33 @@ public class SolidityCodeCompleter extends CompletionContributor {
                         String functionName = statements[statements.length-1];
                         functionName = functionName.replaceAll("\\(.*\\)", "");
                         //We either need to resolve the function first or we can directly look if it points to the factory
-                        System.out.println(functionName);
-                        JSFunction function = searchFunctionInFile(functionName,currentPsiElement);
+                        //So we need to look if there is a deploy or factory. If not we have to resolve the functions to that
+                        if (!functionName.contains("deploy") && !functionName.contains("getContractFactory")){
+                            //If both aren't there we have an unknown function
+                            JSFunction function = searchFunctionInFile(functionName,currentPsiElement);
+                            if (function == null){
+                                //Couldn't find function Maybe in another class/file?
+                                //TODO look if function is elsewhere defined
+                                //Probably doing something like that recursively would make sens
+                                return null;
+                            }
+                            //Now we have to look for the reference name we are looking for
+                            //We need to look at the return statement
+                            PsiElement returnElement = getReturnReferenceAtPosition(position,function);
+                            //We either have a variable name there of a function
+                            System.out.println(returnElement.getClass());
+                            if (returnElement instanceof JSProperty property){
+                                if (property.getInitializer() instanceof JSReferenceExpression referenceExpression){
+                                    PsiElement statement = referenceExpression.resolve();
+                                    System.out.println(statement.getClass());
+                                }
+                            }
 
+                            functionName = returnElement.getText();
+
+                        }
+                        //At this point we have the deploy or getfactory in our scope and we have the reference we have to look for
+                        System.out.println(functionName);
                     }
                 }
             }
@@ -391,6 +416,30 @@ public class SolidityCodeCompleter extends CompletionContributor {
             if(potentialFunciton instanceof JSFunction function){
                 if (functionName.equals(function.getName())){
                     return function;
+                }
+            }
+        }
+        return null;
+    }
+
+    private PsiElement getReturnReferenceAtPosition(int position,JSFunction function){
+        for (PsiElement statement : function.getLastChild().getChildren()){
+            //Look for return and get the name at saved position
+            if (statement.getNode().getElementType().toString().equals("JS:RETURN_STATEMENT")) {
+                if(statement instanceof JSReturnStatement returnStatement){
+                    //Ladies and gentlemen... we got him
+                    //Can be either ES6PropertyImpl class or JSPropertyImpl
+                    PsiElement[] elements = returnStatement.getExpression().getChildren();
+                    ArrayList<PsiElement> filteredElements = new ArrayList<>();
+                    for (PsiElement element : elements){
+                        //Remove whitespace, awaits
+                        switch (element.getNode().getElementType().toString()){
+                            case "JS:AWAIT_KEYWORD":
+                            case "WHITE_SPACE":break;
+                            default: filteredElements.add(element);
+                        }
+                    }
+                    return filteredElements.get(position);
                 }
             }
         }
