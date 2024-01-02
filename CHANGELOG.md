@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0-beta.0] - 2024-01-02
+
+- Improved Variable Handling
+- Updated the code completion tests.
+- Improved Resolution
+- Code Refactoring
+
 ## [1.3.0-alpha.2] - 2023-12-29
 - Added Code Completion Test badge to README.
 - Added additional resources to README.md.
