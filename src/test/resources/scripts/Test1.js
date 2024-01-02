@@ -5,7 +5,7 @@ async function myCustomDeploy() {
   const Stio = await ethers.getContractFactory("Stio");
   const stio = await Stio.deploy();
 
-  //Code1
+  //Code1//Code0
 
   return { stio: stio, contractOwner, alice, bob };
 }
@@ -20,7 +20,12 @@ async function getDeployedContract() {
   return await Stio.deploy();
 }
 
-async function use(){
+async function useSingle(){
   const stio = await getDeployedContract();
   //Code3
+}
+
+async function useLoadFixture(){
+  const { stio, contractOwner, alice, bob } = await loadFixture(myCustomDeploy);
+  //Code4
 }

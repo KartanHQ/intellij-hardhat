@@ -89,6 +89,19 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
             }
             Assert.assertEquals("expected no methods to be suggested", 5, suggestions.size());
         }
+        {
+            myFixture.configureByFile("scripts/Test1.js");
+            //Jump to the part where the completion should be evoked
+            int caretOffset = myFixture.getEditor().getDocument().getText().indexOf("//Code0");
+            myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
+
+            myFixture.type("stio.");
+            LookupElement[] items = myFixture.completeBasic();
+            for (LookupElement element : items){
+                suggestions.remove(element.getLookupString());
+            }
+            Assert.assertEquals("expected no methods to be suggested", 5, suggestions.size());
+        }
     }
 
     @Test
@@ -197,6 +210,24 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
 
         //Jump to the part where the completion should be evoked
         caretOffset = myFixture.getEditor().getDocument().getText().indexOf("//Code3");
+        myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
+
+        myFixture.type("stio.");
+        items = myFixture.completeBasic();
+        for (LookupElement element : items){
+            suggestions.remove(element.getLookupString());
+        }
+        Assert.assertTrue("methods not found: [" + suggestions.size() + "/" + initialSize + "]: " + suggestions, suggestions.isEmpty());
+
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
+        initialSize = suggestions.size();
+
+        //Jump to the part where the completion should be evoked
+        caretOffset = myFixture.getEditor().getDocument().getText().indexOf("//Code4");
         myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
 
         myFixture.type("stio.");

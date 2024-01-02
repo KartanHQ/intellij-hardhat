@@ -49,7 +49,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
         PsiElement elementAtCursor = currentFile.findElementAt(offset);
         if (elementAtCursor == null){
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Couldn't find 'cursor");
+                LOG.debug("Couldn't find cursor");
             }
             return;
         }
@@ -57,6 +57,11 @@ public class SolidityCodeCompleter extends CompletionContributor {
         //Is needed to know which methods should be completed
         //It should return if the cursor is behind anyMethod. and therefore not referring to a contract
         String nameReference = getNameReference(elementAtCursor);
+        if (nameReference == null){
+            //No name found -> no completion
+            LOG.debug("Couldn't find name reference");
+            return;
+        }
 
         String smartContractName = resolveContractVariableReference(nameReference,elementAtCursor);
         if (smartContractName == null){
@@ -144,14 +149,17 @@ public class SolidityCodeCompleter extends CompletionContributor {
         String text = cursorParent.getText();
         text = text.replace("\\”","").replace("\n","");
         String[] references = text.split("\\.");
-        String nameReference = references[references.length-2];
-        String[] commands = nameReference.split(";");
-        nameReference = commands[commands.length-1];
-        if (nameReference.contains("connect(")){
-            nameReference = references[references.length-3];
+        if (references.length > 0){
+            String nameReference = references[references.length-2];
+            String[] commands = nameReference.split(";");
+            nameReference = commands[commands.length-1];
+            if (nameReference.contains("connect(")){
+                nameReference = references[references.length-3];
+            }
+            nameReference = nameReference.trim();
+            return nameReference;
         }
-        nameReference = nameReference.trim();
-        return nameReference;
+        return null;
     }
 
 
@@ -252,6 +260,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
                         if (initializer == null){
                             //If it was null we get something like this:
                             //const { stio, contractOwner, alice, bob } = await myCustomDeploy();
+                            //const { stio, contractOwner, alice, bob } = await loadFixture(myCustomDeploy);
                             //we have to resolve this first
 
                             //We look first on which position our name we look for is
@@ -263,7 +272,11 @@ public class SolidityCodeCompleter extends CompletionContributor {
                             //Get function name
                             String[] statements = jsvarVariables.getStatement().getText().trim().replace("\n","").split("\\.");
                             statements = statements[statements.length-1].replace(";","").split(" ");
+                            //FIXME There is also a better way to do this
                             String functionName = statements[statements.length-1];
+                            if (functionName.contains("loadFixture(")){
+                                functionName = functionName.substring(functionName.indexOf("(")+1,functionName.indexOf(")"));
+                            }
                             functionName = functionName.replaceAll("\\(.*\\)", "");
 
                             deployExpression = resolveUnknownFunctionUntilDeploy(functionName,currentPsiElement,position);
