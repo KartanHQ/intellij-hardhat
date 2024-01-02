@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Updated the code completion tests.
 - Improved Resolution
 - Code Refactoring
+- Bug fixes
 
 ## [1.3.0-alpha.2] - 2023-12-29
 - Added Code Completion Test badge to README.
