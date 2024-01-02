@@ -171,8 +171,6 @@ public class SolidityCodeCompleter extends CompletionContributor {
         return null;
     }
 
-    //TODO What if the variable has been initialized in the class?
-
     /**
      * Gets the name of the reference and resolves this. It will look for something like this:
      *      const Stio = await ethers.getContractFactory("Stio");
@@ -184,139 +182,44 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @return The name of the SmartContract
      */
     private String resolveContractVariableReference(String referenceName, PsiElement elementAtCursor){
-        resolveInitializer(referenceName,elementAtCursor);
-        LOG.debug("Called resolveContractVariableReference with value " + referenceName);
-        PsiElement parent = elementAtCursor.getParent();
-        while (parent != null && !(parent instanceof JSBlockStatement)) {
-            parent = parent.getParent();
+        PsiElement resolved = resolveInitializer(referenceName,elementAtCursor);
+        if (resolved == null){
+            return null;
         }
-        for (PsiElement childElement : parent.getChildren()){
-            if (childElement instanceof JSVarStatement varStatement) {
-                JSVariable[] variables = varStatement.getVariables();
-                for (JSVariable jsvarVariables: variables) {
-                    if(referenceName.equals(jsvarVariables.getName())) {
-                        JSExpression initializer = jsvarVariables.getInitializerOrStub();
-                        // PROBLEM:
-                        // const { stio, contractOwner, alice, bob } = await myCustomDeploy(); gets initializer=null but not const stio = await getDeployedContract();
-                        if (initializer == null){
-                            //Initializer is null, so it has to be initialized out of current scope. We need do use jsvarVariables.getStatement() to look for the initialization
+        String text = resolved.getText();
+        //Extract variable from function getContractFactory(THISVARIABLE) Keep in mind that there are other functions around it
+        String stioVariable = text.substring(text.indexOf(".getContractFactory(") + 20, text.indexOf(")"));
+        //If there are no " then it is a variable and we have to resolve that
+        if (!stioVariable.contains("\"")){
+            if (resolved instanceof JSPrefixExpression prefixExpression) {
+                resolved = prefixExpression.getExpression();
+            }
+            if (resolved instanceof  JSCallExpression callExpression){
+                JSArgumentList argumentList = callExpression.getArgumentList();
 
-                            //Get position of variable declaration
-                            String constant = jsvarVariables.getStatement().getText().trim().replace("\n","").split("=")[0];
-                            int position = 0;
-                            if (constant.contains("{")){
-                                //We have then something like this const { stio, contractOwner, alice, bob } = await myCustomDeploy();
-                                //Get everything between {} and split it by , in constant
-                                String[] constants = constant.substring(constant.indexOf("{") + 1, constant.indexOf("}")).replace(" ", "").split(",");
-                                //Now look for the position of the element that is equal to referenceName and save the position number
-                                position = Arrays.asList(constants).indexOf(referenceName);
-                            }
+                if (argumentList != null && argumentList.getArguments().length > 0) {
+                    JSExpression firstArgument = argumentList.getArguments()[0];
 
+                    // Handle argument if it's a reference
+                    if (firstArgument instanceof JSReferenceExpression argumentReference) {
+                        PsiElement resolvedReference = argumentReference.resolve();
 
-                            //Get function name
-                            String[] statements = jsvarVariables.getStatement().getText().trim().replace("\n","").split("\\.");
-                            statements = statements[statements.length-1].replace(";","").split(" ");
-                            String functionName = statements[statements.length-1];
-                            functionName = functionName.replaceAll("\\(.*\\)", "");
-                            //Search for function with the name of functionName
-                            PsiElement[] jsFunctions = jsvarVariables.getDeclarationScope().getParent().getParent().getChildren();
-                            for (PsiElement potentialFunciton : jsFunctions) {
-                                if ("JS:FUNCTION_DECLARATION".equals(potentialFunciton.getNode().getElementType().toString())){
-                                    if(potentialFunciton instanceof JSFunction function){
-                                        if (functionName.equals(function.getName())){
-                                            //We are in the correct function, now we have to find how the variable was called here and find it
-                                            //We have to look in the return statement first
-                                            //We saved the position earlier
-                                            for (PsiElement statement : function.getLastChild().getChildren()){
-                                                //Look for return and get the name at saved position
-                                                if (statement.getNode().getElementType().toString().equals("JS:RETURN_STATEMENT")) {
-                                                    if(statement instanceof JSReturnStatement returnStatement){
-                                                        PsiElement element = returnStatement.getExpression().getChildren()[position];
-                                                        //Ladies and gentlemen... we got him
-                                                        //Can be either ES6PropertyImpl class or JSPropertyImpl
-                                                        if (element instanceof PsiNamedElement namedElement){
-                                                            return resolveContractVariableReference(namedElement.getName(),namedElement);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                        if (resolvedReference instanceof JSVariable resolvedVariable) {
+                            JSExpression variableInitializer = resolvedVariable.getInitializer();
 
+                            if (variableInitializer != null) {
+                                return variableInitializer.getText().replace("\"","");
                             }
                         }
-                        //Now we are at the point where the contract is being initialied.
-                        //Possible:
-                        // await (await ethers.getContractFactory("Stio")).deploy()
-                        PsiElement resolvedElement = null;
-                        if (initializer.getText().contains(".getContractFactory(")){
-                            //FIXME Extract await await ethers.getContractFactory("Stio") from (await ethers.getContractFactory("Stio")).deploy()
-                            //and set resolvedElement to it
-                            //resolvedElement = initializer;
-
-                            String text = initializer.getText();
-                            //Extract variable from function getContractFactory(THISVARIABLE) Keep in mind that there are other functions around it
-                            String stioVariable = text.substring(text.indexOf(".getContractFactory(") + 20, text.indexOf(")")).replace("\"", "");
-                            return stioVariable;
-                        }else {
-                            // await Stio.deploy()
-                            if (initializer instanceof JSPrefixExpression prefixExpression) {
-                                JSExpression methodExpression = prefixExpression.getExpression();
-
-                                if (methodExpression instanceof JSCallExpression callExpression) {
-                                    JSExpression expression = callExpression.getMethodExpression();
-
-                                    if (expression instanceof JSReferenceExpression referenceExpression) {
-                                        PsiElement firstChild = referenceExpression.getFirstChild();
-
-                                        if (firstChild instanceof JSReferenceExpression) {
-                                            resolvedElement = ((JSReferenceExpression) firstChild).resolve();
-
-                                            if (resolvedElement instanceof JSVariable jsVariable){
-                                                resolvedElement = jsVariable.getInitializer();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (resolvedElement == null){
-                            LOG.debug("Resolved element was null");
-                            return null;
-                        }
-                        //Now we have the psiElement with the .getContractFactory
-                        if (resolvedElement instanceof JSPrefixExpression prefixExpression) {
-                            JSExpression awaitedExpression = prefixExpression.getExpression();
-
-                            if (awaitedExpression instanceof JSCallExpression callExpression) {
-                                JSArgumentList argumentList = callExpression.getArgumentList();
-
-                                if (argumentList != null && argumentList.getArguments().length > 0) {
-                                    JSExpression firstArgument = argumentList.getArguments()[0];
-
-                                    // Handle argument if it's a reference
-                                    if (firstArgument instanceof JSReferenceExpression argumentReference) {
-                                        PsiElement resolvedReference = argumentReference.resolve();
-
-                                        if (resolvedReference instanceof JSVariable resolvedVariable) {
-                                            JSExpression variableInitializer = resolvedVariable.getInitializer();
-
-                                            if (variableInitializer != null) {
-                                                return variableInitializer.getText().replace("\"","");
-                                            }
-                                        }
-                                    }else {
-                                        return firstArgument.getText().replace("\"","");
-                                    }
-                                }
-                            }
-                        }
+                    }else {
+                        return firstArgument.getText().replace("\"","");
                     }
                 }
             }
+        }else {
+            stioVariable = stioVariable.replace("\"","");
         }
-        return null;
+        return stioVariable;
     }
 
     /**
@@ -345,6 +248,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
                         //We now look how this one got initialized
                         JSExpression initializer = jsvarVariables.getInitializer();
                         int position = 0;
+                        JSCallExpression deployExpression = null;
                         if (initializer == null){
                             //If it was null we get something like this:
                             //const { stio, contractOwner, alice, bob } = await myCustomDeploy();
@@ -355,45 +259,114 @@ public class SolidityCodeCompleter extends CompletionContributor {
                             String[] constants = constant.substring(constant.indexOf("{") + 1, constant.indexOf("}")).replace(" ", "").split(",");
                             //Now look for the position of the element that is equal to referenceName and save the position number
                             position = Arrays.asList(constants).indexOf(referenceName);
-                        }
-                        //If it was not null we get something like this:
-                        //await Stio.deploy()
-                        //await getDeployedContract()
-                        //Get function name
-                        String[] statements = jsvarVariables.getStatement().getText().trim().replace("\n","").split("\\.");
-                        statements = statements[statements.length-1].replace(";","").split(" ");
-                        String functionName = statements[statements.length-1];
-                        functionName = functionName.replaceAll("\\(.*\\)", "");
-                        //We either need to resolve the function first or we can directly look if it points to the factory
-                        //So we need to look if there is a deploy or factory. If not we have to resolve the functions to that
-                        if (!functionName.contains("deploy") && !functionName.contains("getContractFactory")){
-                            //If both aren't there we have an unknown function
-                            JSFunction function = searchFunctionInFile(functionName,currentPsiElement);
-                            if (function == null){
-                                //Couldn't find function Maybe in another class/file?
-                                //TODO look if function is elsewhere defined
-                                //Probably doing something like that recursively would make sens
-                                return null;
-                            }
-                            //Now we have to look for the reference name we are looking for
-                            //We need to look at the return statement
-                            PsiElement returnElement = getReturnReferenceAtPosition(position,function);
-                            //We either have a variable name there of a function
-                            System.out.println(returnElement.getClass());
-                            if (returnElement instanceof JSProperty property){
-                                if (property.getInitializer() instanceof JSReferenceExpression referenceExpression){
-                                    PsiElement statement = referenceExpression.resolve();
-                                    System.out.println(statement.getClass());
-                                }
-                            }
 
-                            functionName = returnElement.getText();
+                            //Get function name
+                            String[] statements = jsvarVariables.getStatement().getText().trim().replace("\n","").split("\\.");
+                            statements = statements[statements.length-1].replace(";","").split(" ");
+                            String functionName = statements[statements.length-1];
+                            functionName = functionName.replaceAll("\\(.*\\)", "");
 
+                            deployExpression = resolveUnknownFunctionUntilDeploy(functionName,currentPsiElement,position);
+                        }else {
+                            //If it was not null we get something like this:
+                            //await Stio.deploy()
+                            //await getDeployedContract()
+                            //We either need to resolve the function first or we can directly look if it points to the factory
+                            //So we need to look if there is a deploy or factory. If not we have to resolve the functions to that
+                            if (initializer instanceof JSPrefixExpression prefixExpression){
+                                initializer = prefixExpression.getExpression();
+                            }
+                            if (initializer instanceof JSCallExpression callExpression){
+                                String[] calls = callExpression.getMethodExpression().getText().split("\\.");
+                                String functionName = calls[calls.length-1];
+                                if (functionName.equals("deploy")){
+                                    deployExpression = callExpression;
+                                } else
+                                    if (functionName.equals("getContractFactory")){
+                                        return initializer;
+                                    }else
+                                        //If both aren't there we have an unknown function
+                                        deployExpression = resolveUnknownFunctionUntilDeploy(functionName,currentPsiElement);
+                            }
                         }
                         //At this point we have the deploy or getfactory in our scope and we have the reference we have to look for
-                        System.out.println(functionName);
+                        return resolveDeployToContractFactory(deployExpression);
                     }
                 }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the contract factory reference in the deploy expression.
+     *
+     * @param deployExpression The deploy expression representing the contract deployment.
+     * @return The PSI element of the resolved contract factory reference.
+     */
+    private PsiElement resolveDeployToContractFactory(JSCallExpression deployExpression){
+        PsiElement referenceObject = deployExpression.getMethodExpression().getFirstChild();
+        if (referenceObject instanceof JSReferenceExpression referenceExpression){
+            referenceObject = referenceExpression.resolve();
+        }
+        if (referenceObject instanceof JSVariable jsVariable){
+            referenceObject = jsVariable.getInitializer();
+        }
+        if (referenceObject instanceof JSPrefixExpression prefixExpression){
+            referenceObject = prefixExpression.getExpression();
+        }
+        return referenceObject;
+    }
+    private JSCallExpression resolveUnknownFunctionUntilDeploy(String functionName, PsiElement currentPsiElement){
+        return resolveUnknownFunctionUntilDeploy(functionName,currentPsiElement,0);
+    }
+    /**
+     * Resolves an unknown function until the deploy statement is reached. This method recursively searches for the given function name in the parent file scope until it finds the
+     * deploy statement or reaches the top-level file scope.
+     *
+     * @param functionName       The name of the function to resolve.
+     * @param currentPsiElement  The current PSI element being searched in.
+     * @param returnPosition     The index of the return element to resolve (if the return element is a function call).
+     * @return The resolved JSCallExpression representing the deploy statement, or null if the function or deploy statement is not found.
+     */
+    private JSCallExpression resolveUnknownFunctionUntilDeploy(String functionName, PsiElement currentPsiElement,int returnPosition){
+        //TODO Recursive until Deploy
+        JSFunction function = searchFunctionInFile(functionName,currentPsiElement);
+        if (function == null){
+            //Couldn't find function Maybe in another class/file?
+            //TODO look if function is elsewhere defined
+            //Probably doing something like that recursively would make sens
+            return null;
+        }
+        //Now we have to look for the reference name we are looking for
+        //We need to look at the return statement
+        PsiElement returnElement = getReturnReferenceAtPosition(returnPosition,function);
+        //We either have a variable name there of a function
+
+        //Variable
+        if (returnElement instanceof JSProperty property){
+            if (property.getInitializer() instanceof JSReferenceExpression referenceExpression){
+                PsiElement statement = referenceExpression.resolve();
+                if (statement instanceof JSVariable variable){
+                    if (variable.getInitializer() instanceof JSPrefixExpression prefixExpression){
+                        if (prefixExpression.getExpression() instanceof JSCallExpression callExpression){
+                            //Just set returnElement as call Expression, so it can be handled below
+                            returnElement = callExpression;
+                        }
+                    }
+                }
+            }
+        }
+
+        //Function
+        if (returnElement instanceof JSCallExpression callExpression){
+            if (callExpression.getText().contains(".deploy()")){
+                return callExpression;
+            }else {
+                //Look for the function if there is another custom function
+                //FIXME Bad way to look for it but better than nothing
+                String[] methodStrings = callExpression.getText().replace("(","").replace(")","").split("\\.");
+                return resolveUnknownFunctionUntilDeploy(methodStrings[methodStrings.length-1],callExpression,0);
             }
         }
         return null;
