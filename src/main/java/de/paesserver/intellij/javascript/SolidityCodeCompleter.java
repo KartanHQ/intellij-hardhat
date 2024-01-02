@@ -149,7 +149,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
         String text = cursorParent.getText();
         text = text.replace("\\”","").replace("\n","");
         String[] references = text.split("\\.");
-        if (references.length > 0){
+        if (references.length > 1){
             String nameReference = references[references.length-2];
             String[] commands = nameReference.split(";");
             nameReference = commands[commands.length-1];
@@ -278,7 +278,6 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                 functionName = functionName.substring(functionName.indexOf("(")+1,functionName.indexOf(")"));
                             }
                             functionName = functionName.replaceAll("\\(.*\\)", "");
-
                             deployExpression = resolveUnknownFunctionUntilDeploy(functionName,currentPsiElement,position);
                         }else {
                             //If it was not null we get something like this:
@@ -297,9 +296,10 @@ public class SolidityCodeCompleter extends CompletionContributor {
                                 } else
                                     if (functionName.equals("getContractFactory")){
                                         return initializer;
-                                    }else
+                                    }else{
                                         //If both aren't there we have an unknown function
                                         deployExpression = resolveUnknownFunctionUntilDeploy(functionName,currentPsiElement);
+                                    }
                             }
                         }
                         //At this point we have the deploy or getfactory in our scope and we have the reference we have to look for
@@ -317,7 +317,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @param deployExpression The deploy expression representing the contract deployment.
      * @return The PSI element of the resolved contract factory reference.
      */
-    private PsiElement resolveDeployToContractFactory(JSCallExpression deployExpression){
+    private PsiElement resolveDeployToContractFactory(@NotNull JSCallExpression deployExpression){
         PsiElement referenceObject = deployExpression.getMethodExpression().getFirstChild();
         if (referenceObject instanceof JSReferenceExpression referenceExpression){
             referenceObject = referenceExpression.resolve();
@@ -342,9 +342,9 @@ public class SolidityCodeCompleter extends CompletionContributor {
      * @param returnPosition     The index of the return element to resolve (if the return element is a function call).
      * @return The resolved JSCallExpression representing the deploy statement, or null if the function or deploy statement is not found.
      */
-    private JSCallExpression resolveUnknownFunctionUntilDeploy(String functionName, PsiElement currentPsiElement,int returnPosition){
+    private JSCallExpression resolveUnknownFunctionUntilDeploy(@NotNull String functionName,@NotNull PsiElement currentPsiElement,int returnPosition){
         //TODO Recursive until Deploy
-        JSFunction function = searchFunctionInFile(functionName,currentPsiElement);
+        JSFunction function = searchFunctionInParent(functionName,currentPsiElement);
         if (function == null){
             //Couldn't find function Maybe in another class/file?
             //TODO look if function is elsewhere defined
@@ -387,22 +387,34 @@ public class SolidityCodeCompleter extends CompletionContributor {
         return null;
     }
 
-    /**
-     * Searches for a function with the given name in the parent file scope.
-     *
-     * @param functionName      The name of the function to search for.
-     * @param currentPsiElement The current PSI element.
-     * @return The PSIElement of the function with the given name, or null if not found.
-     */
-    private JSFunction searchFunctionInFile(String functionName, PsiElement currentPsiElement){
-        PsiElement fileScope = currentPsiElement.getParent();
-        while (fileScope != null && !"FILE".equals(fileScope.getNode().getElementType().toString())) {
-            fileScope = fileScope.getParent();
+    private JSFunction searchFunctionInParent(@NotNull String functionName, PsiElement currentPsiElement){
+        if (currentPsiElement == null || currentPsiElement.getParent() == null){
+            return null;
         }
-        PsiElement[] jsFunctions = fileScope.getChildren();
-        for (PsiElement potentialFunciton : jsFunctions) {
-            if(potentialFunciton instanceof JSFunction function){
+        PsiElement parent = currentPsiElement.getParent();
+
+        PsiElement[] jsFunctions = parent.getChildren();
+        for (PsiElement potentialFunction : jsFunctions) {
+            if(potentialFunction instanceof JSFunction function){
                 if (functionName.equals(function.getName())){
+                    return function;
+                }else {
+                    //Look if it might be defined in the function
+                    JSFunction inFunction = searchInFunction(functionName,function);
+                    if (inFunction != null){
+                        return inFunction;
+                    }
+                }
+            }
+        }
+        return searchFunctionInParent(functionName,parent);
+    }
+
+    private JSFunction searchInFunction(@NotNull String functionName,@NotNull JSFunction function){
+        PsiElement[] childs = function.getLastChild().getChildren();
+        for (PsiElement child : childs){
+            if(child instanceof JSFunction subFunction){
+                if (functionName.equals(subFunction.getName())){
                     return function;
                 }
             }
@@ -410,7 +422,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
         return null;
     }
 
-    private PsiElement getReturnReferenceAtPosition(int position,JSFunction function){
+    private PsiElement getReturnReferenceAtPosition(int position,@NotNull JSFunction function){
         for (PsiElement statement : function.getLastChild().getChildren()){
             //Look for return and get the name at saved position
             if (statement.getNode().getElementType().toString().equals("JS:RETURN_STATEMENT")) {
