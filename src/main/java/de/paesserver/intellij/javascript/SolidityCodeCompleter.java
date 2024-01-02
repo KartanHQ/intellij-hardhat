@@ -208,11 +208,11 @@ public class SolidityCodeCompleter extends CompletionContributor {
                             JSExpression variableInitializer = resolvedVariable.getInitializer();
 
                             if (variableInitializer != null) {
-                                return variableInitializer.getText().replace("\"","");
+                                stioVariable = variableInitializer.getText().replace("\"","");
                             }
                         }
                     }else {
-                        return firstArgument.getText().replace("\"","");
+                        stioVariable = firstArgument.getText().replace("\"","");
                     }
                 }
             }
@@ -348,11 +348,13 @@ public class SolidityCodeCompleter extends CompletionContributor {
             if (property.getInitializer() instanceof JSReferenceExpression referenceExpression){
                 PsiElement statement = referenceExpression.resolve();
                 if (statement instanceof JSVariable variable){
-                    if (variable.getInitializer() instanceof JSPrefixExpression prefixExpression){
-                        if (prefixExpression.getExpression() instanceof JSCallExpression callExpression){
-                            //Just set returnElement as call Expression, so it can be handled below
-                            returnElement = callExpression;
-                        }
+                    PsiElement initializer = variable.getInitializer();
+                    if (initializer instanceof JSPrefixExpression prefixExpression){
+                        initializer = prefixExpression.getExpression();
+                    }
+                    if (initializer instanceof JSCallExpression callExpression){
+                        //Just set returnElement as call Expression, so it can be handled below
+                        returnElement = callExpression;
                     }
                 }
             }
