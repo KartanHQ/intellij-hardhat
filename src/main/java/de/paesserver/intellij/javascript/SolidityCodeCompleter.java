@@ -244,7 +244,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
         while (parent != null && !(parent instanceof JSBlockStatement)) {
             parent = parent.getParent();
         }
-        if (parent.getChildren() == null){
+        if (parent == null){
             return null;
         }
         //Search for element there
