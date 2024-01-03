@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0-beta.1] - 2024-01-03
+
+- New Test case
+- Bug fix reference extraction
+- Bug fix null pointer
+
 ## [1.3.0-beta.0] - 2024-01-02
 
 - Improved Variable Handling
