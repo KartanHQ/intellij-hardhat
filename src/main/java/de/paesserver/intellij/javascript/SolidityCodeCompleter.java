@@ -244,6 +244,9 @@ public class SolidityCodeCompleter extends CompletionContributor {
         while (parent != null && !(parent instanceof JSBlockStatement)) {
             parent = parent.getParent();
         }
+        if (parent.getChildren() == null){
+            return null;
+        }
         //Search for element there
         for (PsiElement childElement : parent.getChildren()){
             //We are looking for variables which have been initialized
