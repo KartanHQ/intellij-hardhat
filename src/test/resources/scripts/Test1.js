@@ -29,3 +29,8 @@ async function useLoadFixture(){
   const { stio, contractOwner, alice, bob } = await loadFixture(myCustomDeploy);
   //Code4
 }
+
+async function expectFunction(){
+  const { stio, contractOwner, alice, bob } = await myCustomDeploy();
+  expect();//Code5
+}

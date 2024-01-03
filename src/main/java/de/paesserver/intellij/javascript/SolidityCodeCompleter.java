@@ -156,6 +156,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
             if (nameReference.contains("connect(")){
                 nameReference = references[references.length-3];
             }
+            nameReference = nameReference.replace("(","").replace(")","");
             nameReference = nameReference.trim();
             return nameReference;
         }
@@ -245,6 +246,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
             parent = parent.getParent();
         }
         if (parent == null){
+            LOG.debug("resolveInitializer - parent was null");
             return null;
         }
         //Search for element there
@@ -311,6 +313,7 @@ public class SolidityCodeCompleter extends CompletionContributor {
                 }
             }
         }
+        LOG.debug("resolveInitializer - couldn't find find initializer with reference name " + referenceName);
         return null;
     }
 

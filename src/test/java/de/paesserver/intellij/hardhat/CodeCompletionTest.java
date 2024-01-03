@@ -236,6 +236,24 @@ public class CodeCompletionTest extends LightPlatformCodeInsightFixture4TestCase
             suggestions.remove(element.getLookupString());
         }
         Assert.assertTrue("methods not found: [" + suggestions.size() + "/" + initialSize + "]: " + suggestions, suggestions.isEmpty());
+
+        suggestions.add("registerAddress");
+        suggestions.add("deposit");
+        suggestions.add("withdraw");
+        suggestions.add("accountMap");
+        suggestions.add("owner");
+        initialSize = suggestions.size();
+
+        //Jump to the part where the completion should be evoked
+        caretOffset = myFixture.getEditor().getDocument().getText().indexOf("//Code5")-2;
+        myFixture.getEditor().getCaretModel().moveToOffset(caretOffset);
+
+        myFixture.type("stio.");
+        items = myFixture.completeBasic();
+        for (LookupElement element : items){
+            suggestions.remove(element.getLookupString());
+        }
+        Assert.assertTrue("methods not found: [" + suggestions.size() + "/" + initialSize + "]: " + suggestions, suggestions.isEmpty());
     }
 
     @Test
