@@ -5,7 +5,6 @@
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/KartanHQ/intellij-hardhat/build.yml?branch=master)](https://github.com/KartanHQ/intellij-hardhat/actions/workflows/build.yml)
 ![Code Completion Test](https://github.com/arne-fuchs/intellij-hardhat/actions/workflows/run-gradle-tests.yml/badge.svg)
 [![GitHub](https://img.shields.io/github/license/KartanHQ/intellij-hardhat)](https://github.com/KartanHQ/intellij-hardhat/blob/master/LICENSE)
-[![Twitter Follow](https://img.shields.io/badge/follow-%40nekofar-1DA1F2?logo=twitter&style=flat)](https://twitter.com/nekofar)
 
 <!-- Plugin description -->
 Provides boilerplate codes for easier smart contract creation using [Hardhat](https://hardhat.org) CLI.
